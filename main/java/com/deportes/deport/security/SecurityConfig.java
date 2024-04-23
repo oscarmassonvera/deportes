@@ -48,25 +48,11 @@ public class SecurityConfig {
                 requestMatchers(HttpMethod.GET,"/api/users").permitAll().
                 requestMatchers(HttpMethod.POST,"/api/users").permitAll(). //.hasRole("SUBTADMIN").
                 // PRODUCTO
-                requestMatchers(HttpMethod.GET,"/api/products").hasAnyRole("ADMIN","SUBTADMIN","WAITER").
-                requestMatchers(HttpMethod.GET,"/api/products/{id}").hasAnyRole("ADMIN", "WAITER").
-                requestMatchers(HttpMethod.POST,"/api/products").hasAnyRole("ADMIN").
-                requestMatchers(HttpMethod.PUT,"/api/products/{id}").hasAnyRole("ADMIN").
-                requestMatchers(HttpMethod.DELETE,"/api/products/{id}").hasAnyRole("ADMIN").
-                // ORDEN
-
-                // FACTURA
-                
-                // STOCK
-                
-                // MENU
-                
-                // RESERVACION
-
-                // AREA DE COCINA
-
-                // ESTADISTICAS
-                
+                requestMatchers(HttpMethod.GET,"/api/products").hasAnyRole("PREMIUM","BASIC").
+                requestMatchers(HttpMethod.GET,"/api/products/{id}").hasAnyRole("PREMIUM","BASIC").
+                requestMatchers(HttpMethod.POST,"/api/products").hasAnyRole("PREMIUM","BASIC").
+                requestMatchers(HttpMethod.PUT,"/api/products/{id}").hasAnyRole("PREMIUM","BASIC").
+                requestMatchers(HttpMethod.DELETE,"/api/products/{id}").hasAnyRole("PREMIUM","BASIC").
                 anyRequest().authenticated()).
                 addFilter(new JwtAuthenticationFilter(authenticationConfiguration.getAuthenticationManager())).
                 addFilter(new JwtValidationFilter(authenticationConfiguration.getAuthenticationManager())).
