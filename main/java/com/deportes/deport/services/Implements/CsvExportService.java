@@ -1,4 +1,5 @@
 package com.deportes.deport.services.Implements;
+
 import org.springframework.stereotype.Service;
 import com.mashape.unirest.http.Unirest;
 import java.io.BufferedWriter;
@@ -13,7 +14,8 @@ public class CsvExportService {
     public void exportFootballLeaguesToCsv(String filePath) {
         try {
             // Hacer la solicitud HTTP
-            com.mashape.unirest.http.HttpResponse<com.mashape.unirest.http.JsonNode> response = Unirest.get("https://v3.football.api-sports.io/leagues")
+            com.mashape.unirest.http.HttpResponse<com.mashape.unirest.http.JsonNode> response = 
+                Unirest.get("https://v3.football.api-sports.io/leagues")
                     .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
                     .header("x-rapidapi-host", "v3.football.api-sports.io")
                     .asJson();
@@ -57,4 +59,42 @@ public class CsvExportService {
             e.printStackTrace();
         }
     }
+
+    public void exportTimezonesToCsv(String filePath) {
+        try {
+            // Hacer la solicitud HTTP
+            com.mashape.unirest.http.HttpResponse<com.mashape.unirest.http.JsonNode> response = 
+                Unirest.get("https://v3.football.api-sports.io/timezone")
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+
+            // Obtener el cuerpo de la respuesta como cadena
+            String responseBody = response.getBody().toString();
+
+            // Parsear la respuesta JSON
+            JSONObject jsonObject = new JSONObject(responseBody);
+            JSONArray timezones = jsonObject.getJSONArray("response");
+
+            // Crear un nuevo archivo CSV
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                // Escribir encabezados
+                writer.write("Zona Horaria\n");
+
+                // Iterar sobre las zonas horarias y escribir en el archivo CSV
+                for (int i = 0; i < timezones.length(); i++) {
+                    // Escribir datos de la zona horaria en el archivo CSV
+                    writer.write(timezones.getString(i) + "\n");
+                }
+            }
+
+            System.out.println("Los datos de las zonas horarias se han exportado correctamente a " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

@@ -1,7 +1,6 @@
 package com.deportes.deport.controllers;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,7 +13,6 @@ public class FootballController {
 
     private final CsvExportService csvExportService;
 
-    @Autowired
     public FootballController(CsvExportService csvExportService) {
         this.csvExportService = csvExportService;
     }
@@ -24,5 +22,12 @@ public class FootballController {
         String filePath = "D:/ProyectosWebJava/deport/excells/football_leagues.csv";
         csvExportService.exportFootballLeaguesToCsv(filePath);
         return "Los datos se han exportado correctamente a " + filePath;
+    }
+
+    @GetMapping("/export/timezones")
+    public String exportTimezonesToCsv() {
+        String filePath = "D:/ProyectosWebJava/deport/excells/timezones.csv";
+        csvExportService.exportTimezonesToCsv(filePath);
+        return "Los datos de las zonas horarias se han exportado correctamente a " + filePath;
     }
 }
