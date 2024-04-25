@@ -2,6 +2,7 @@ package com.deportes.deport.services.Implements;
 
 import org.springframework.stereotype.Service;
 
+import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -154,4 +155,65 @@ public class CsvExportService {
             e.printStackTrace();
         }
     }
+
+        // TEAMS AND SEDES 
+        // SOLO SE PUEDE POR ID  PERO HAY MUCHAS MANERAS MAS CON RUTAS DIFERENTES 
+        //     // Get one team from one team {id}
+        //     get("https://v3.football.api-sports.io/teams?id=33");
+
+        //     // Get one team from one team {name}
+        //     get("https://v3.football.api-sports.io/teams?name=manchester united");
+
+        //     // Get all teams from one {league} & {season}
+        //     get("https://v3.football.api-sports.io/teams?league=39&season=2019");
+
+        //     // Get teams from one team {country}
+        //     get("https://v3.football.api-sports.io/teams?country=england");
+
+        //     // Get teams from one team {code}
+        //     get("https://v3.football.api-sports.io/teams?code=FRA");
+
+        //     // Get teams from one venue {id}
+        //     get("https://v3.football.api-sports.io/teams?venue=789");
+
+        //     // Allows you to search for a team in relation to a team {name} or {country}
+        //     get("https://v3.football.api-sports.io/teams?search=manches");
+        //     get("https://v3.football.api-sports.io/teams?search=England");
+
+        // SE PODRIA TOMAS TODOS LOS PAISES Y LLAMAR A CADA EQUIPO POR PAIS PARA TENER LA DATA 
+        // DE TODOS LOS EQUIPOS O TEAMS POR SUS IDS LEIENDO EL CSV DE PAISES Y LLENANDO EL CAMPO 
+        // Get teams from one team {country} POR CADA PAIS
+
+        public void exportTeamsToCsv(String filePath) {
+            try {
+                HttpResponse<JsonNode> response = Unirest.get("https://v3.football.api-sports.io/teams")
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+        
+                JSONArray teamsArray = response.getBody().getObject().getJSONArray("response");
+        
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                    writer.write("ID, Nombre Equipo, Nombre Sede, Dirección, Ciudad, Capacidad, Superficie, Imagen Logo Equipo, Imagen Sede\n");
+        
+                    for (Object teamDataObj : teamsArray) {
+                        JSONObject teamData = (JSONObject) teamDataObj;
+                        writer.write(String.format("%d, %s, %s, %s, %s, %d, %s, %s, %s\n",
+                                JsonPath.read(teamData, "$.team.id"), JsonPath.read(teamData, "$.team.name"),
+                                JsonPath.read(teamData, "$.venue.name"), JsonPath.read(teamData, "$.venue.address"),
+                                JsonPath.read(teamData, "$.venue.city"), JsonPath.read(teamData, "$.venue.capacity"),
+                                JsonPath.read(teamData, "$.venue.surface"), JsonPath.read(teamData, "$.team.logo"),
+                                JsonPath.read(teamData, "$.venue.image")));
+                    }
+                }
+        
+                System.out.println("Los datos del equipo y su sede se han exportado correctamente a " + filePath);
+        
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 }

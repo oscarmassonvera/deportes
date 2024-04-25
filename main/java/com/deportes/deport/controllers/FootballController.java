@@ -1,11 +1,15 @@
 package com.deportes.deport.controllers;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.deportes.deport.services.Implements.CsvExportService;
+import com.deportes.deport.services.Implements.FootballAPIService;
 
 @RestController
 @RequestMapping("/api")
@@ -16,6 +20,74 @@ public class FootballController {
     public FootballController(CsvExportService csvExportService) {
         this.csvExportService = csvExportService;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // PARA VER LA ESTRUCTURA DE LOS DATOS QUE ME PASA EL JSON
+
+
+    @Autowired
+    private FootballAPIService footballService;
+
+    @GetMapping("/footballLeagues")
+    public ResponseEntity<String> getFootballLeagues() {
+        String leaguesResponse = footballService.getFootballLeagues();
+
+        if (leaguesResponse != null) {
+            return ResponseEntity.ok(leaguesResponse);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener las ligas de fútbol");
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @GetMapping("/export/football-leagues")
     public String exportFootballLeaguesToCsv() {
@@ -45,5 +117,12 @@ public class FootballController {
         return "Los datos de las temporadas de la liga se han exportado correctamente a " + filePath;
     }
 
-    // TEAMS --->>> POR AKI ME QUEDE Y CONTINUO 
+    @GetMapping("/export/teams")
+    public String exportTeamsToCsv() {
+        String filePath = "D:/ProyectosWebJava/deport/excells/teams.csv";
+        csvExportService.exportTeamsToCsv(filePath);
+        return "Los datos de los equipos se han exportado correctamente a " + filePath;
+    }
+
+    
 }
