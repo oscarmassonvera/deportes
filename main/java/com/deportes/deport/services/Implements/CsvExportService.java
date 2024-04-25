@@ -1,6 +1,9 @@
 package com.deportes.deport.services.Implements;
 
 import org.springframework.stereotype.Service;
+
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -96,5 +99,59 @@ public class CsvExportService {
         }
     }
 
+    public void exportCountriesToCsv(String filePath) {
+        try {
+            HttpResponse<JsonNode> response = Unirest.get("https://v3.football.api-sports.io/countries")
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+    
+            JSONObject jsonObject = response.getBody().getObject();
+            JSONArray countries = jsonObject.getJSONArray("response");
+    
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                writer.write("Nombre, Código, Bandera\n");
+    
+                for (int i = 0; i < countries.length(); i++) {
+                    JSONObject country = countries.getJSONObject(i);
+                    String countryCode = country.get("code").toString();
+                    String flag = country.get("flag").toString();  // Convertir el valor a String
+                    writer.write(country.getString("name") + "," + countryCode + "," + flag + "\n");
+                }
+            }
+    
+            System.out.println("Los datos de los países se han exportado correctamente a " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    public void exportLeaguesSeasonsToCsv(String filePath) {
+        try {
+            HttpResponse<JsonNode> response = Unirest.get("https://v3.football.api-sports.io/leagues/seasons")
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+    
+            JSONObject jsonObject = response.getBody().getObject();
+            JSONArray seasons = jsonObject.getJSONArray("response");
+    
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                writer.write("Temporada\n");
+    
+                for (int i = 0; i < seasons.length(); i++) {
+                    int season = seasons.getInt(i);
+                    writer.write(season + "\n");
+                }
+            }
+    
+            System.out.println("Los datos de las temporadas de la liga se han exportado correctamente a " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -30,4 +30,20 @@ public class FootballController {
         csvExportService.exportTimezonesToCsv(filePath);
         return "Los datos de las zonas horarias se han exportado correctamente a " + filePath;
     }
+
+    @GetMapping("/export/countries")
+    public String exportCountriesToCsv() {
+        String filePath = "D:/ProyectosWebJava/deport/excells/countries.csv";
+        csvExportService.exportCountriesToCsv(filePath);
+        return "Los datos de los países se han exportado correctamente a " + filePath;
+    }
+
+    @GetMapping("/export/seasons")
+    public String exportLeaguesSeasonsToCsv() {
+        String filePath = "D:/ProyectosWebJava/deport/excells/leagues_seasons.csv";
+        csvExportService.exportLeaguesSeasonsToCsv(filePath);
+        return "Los datos de las temporadas de la liga se han exportado correctamente a " + filePath;
+    }
+
+    // TEAMS --->>> POR AKI ME QUEDE Y CONTINUO 
 }
