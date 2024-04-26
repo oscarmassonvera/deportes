@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.deportes.deport.services.Implements.CsvExportService;
 import com.deportes.deport.services.Implements.FootballAPIService;
+import com.mashape.unirest.http.exceptions.UnirestException;
 
 @RestController
 @RequestMapping("/api")
@@ -57,38 +59,6 @@ public class FootballController {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     @GetMapping("/export/football-leagues")
     public String exportFootballLeaguesToCsv() {
         String filePath = "D:/ProyectosWebJava/deport/excells/football_leagues.csv";
@@ -117,12 +87,18 @@ public class FootballController {
         return "Los datos de las temporadas de la liga se han exportado correctamente a " + filePath;
     }
 
-    @GetMapping("/export/teams")
-    public String exportTeamsToCsv() {
+    // hay que pasarle la liga y la sesion para que me de todos los equipos de esa liga en esa session
+
+    @GetMapping("/export/teams/{league}/{season}")
+    public String exportTeamsToCsv(@PathVariable String league, @PathVariable String season) {
         String filePath = "D:/ProyectosWebJava/deport/excells/teams.csv";
-        csvExportService.exportTeamsToCsv(filePath);
+        try {
+            csvExportService.exportTeamsToCsv(filePath, league, season);
+        } catch (UnirestException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return "Los datos de los equipos se han exportado correctamente a " + filePath;
     }
-
     
 }

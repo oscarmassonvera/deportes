@@ -2,10 +2,13 @@ package com.deportes.deport.services.Implements;
 
 import org.springframework.stereotype.Service;
 
-import com.jayway.jsonpath.JsonPath;
+import com.deportes.deport.entities.Team;
+import com.deportes.deport.entities.Venue;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -156,62 +159,48 @@ public class CsvExportService {
         }
     }
 
-        // TEAMS AND SEDES 
-        // SOLO SE PUEDE POR ID  PERO HAY MUCHAS MANERAS MAS CON RUTAS DIFERENTES 
-        //     // Get one team from one team {id}
-        //     get("https://v3.football.api-sports.io/teams?id=33");
-
-        //     // Get one team from one team {name}
-        //     get("https://v3.football.api-sports.io/teams?name=manchester united");
-
-        //     // Get all teams from one {league} & {season}
-        //     get("https://v3.football.api-sports.io/teams?league=39&season=2019");
-
-        //     // Get teams from one team {country}
-        //     get("https://v3.football.api-sports.io/teams?country=england");
-
-        //     // Get teams from one team {code}
-        //     get("https://v3.football.api-sports.io/teams?code=FRA");
-
-        //     // Get teams from one venue {id}
-        //     get("https://v3.football.api-sports.io/teams?venue=789");
-
-        //     // Allows you to search for a team in relation to a team {name} or {country}
-        //     get("https://v3.football.api-sports.io/teams?search=manches");
-        //     get("https://v3.football.api-sports.io/teams?search=England");
-
-        // SE PODRIA TOMAS TODOS LOS PAISES Y LLAMAR A CADA EQUIPO POR PAIS PARA TENER LA DATA 
-        // DE TODOS LOS EQUIPOS O TEAMS POR SUS IDS LEIENDO EL CSV DE PAISES Y LLENANDO EL CAMPO 
-        // Get teams from one team {country} POR CADA PAIS
-
-        public void exportTeamsToCsv(String filePath) {
-            try {
-                HttpResponse<JsonNode> response = Unirest.get("https://v3.football.api-sports.io/teams")
-                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
-                        .header("x-rapidapi-host", "v3.football.api-sports.io")
-                        .asJson();
         
-                JSONArray teamsArray = response.getBody().getObject().getJSONArray("response");
+
+        public void exportTeamsToCsv(String filePath, String league, String season) throws UnirestException {
+            try {
+                String apiUrl = String.format("https://v3.football.api-sports.io/teams?league=%s&season=%s", league, season);
+        
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+        
+                JSONObject jsonResponse = response.getBody().getObject();
+                JSONArray teamsArray = jsonResponse.getJSONArray("response");
         
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-                    writer.write("ID, Nombre Equipo, Nombre Sede, Dirección, Ciudad, Capacidad, Superficie, Imagen Logo Equipo, Imagen Sede\n");
+                    writer.write("ID, Nombre Equipo, Código Equipo, País, Fundado, Nacional, Logo, Nombre Sede, Dirección, Ciudad, Capacidad, Superficie, Imagen Sede\n");
         
-                    for (Object teamDataObj : teamsArray) {
-                        JSONObject teamData = (JSONObject) teamDataObj;
-                        writer.write(String.format("%d, %s, %s, %s, %s, %d, %s, %s, %s\n",
-                                JsonPath.read(teamData, "$.team.id"), JsonPath.read(teamData, "$.team.name"),
-                                JsonPath.read(teamData, "$.venue.name"), JsonPath.read(teamData, "$.venue.address"),
-                                JsonPath.read(teamData, "$.venue.city"), JsonPath.read(teamData, "$.venue.capacity"),
-                                JsonPath.read(teamData, "$.venue.surface"), JsonPath.read(teamData, "$.team.logo"),
-                                JsonPath.read(teamData, "$.venue.image")));
+                    for (int i = 0; i < teamsArray.length(); i++) {
+                        JSONObject teamData = teamsArray.getJSONObject(i);
+        
+                        String logo = teamData.getJSONObject("team").optString("logo", "");
+                        String name = teamData.getJSONObject("team").getString("name");
+                        String code = teamData.getJSONObject("team").optString("code", "");
+                        String country = teamData.getJSONObject("team").optString("country", "");
+                        int founded = teamData.getJSONObject("team").optInt("founded", 0);
+                        boolean national = teamData.getJSONObject("team").optBoolean("national", false);
+                        JSONObject venueData = teamData.getJSONObject("venue");
+                        String venueName = venueData.optString("name", "");
+                        String address = venueData.optString("address", "");
+                        String city = venueData.optString("city", "");
+                        int capacity = venueData.optInt("capacity", 0);
+                        String surface = venueData.optString("surface", "");
+                        String venueImage = venueData.optString("image", "");
+        
+                        writer.write(String.format("%d, %s, %s, %s, %d, %b, %s, %s, %s, %s, %d, %s, %s\n",
+                                i + 1, name, code, country, founded, national, logo, venueName, address, city, capacity, surface, venueImage));
                     }
                 }
         
-                System.out.println("Los datos del equipo y su sede se han exportado correctamente a " + filePath);
+                System.out.println("Los datos de todos los equipos y sus sedes se han exportado correctamente a " + filePath);
         
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
