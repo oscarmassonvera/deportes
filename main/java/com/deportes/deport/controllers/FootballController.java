@@ -87,16 +87,15 @@ public class FootballController {
         return "Los datos de las temporadas de la liga se han exportado correctamente a " + filePath;
     }
 
-    // hay que pasarle la liga y la sesion para que me de todos los equipos de esa liga en esa session
-
+    // pasar el nombre de la liga y la sesion o temporada para obtener todos los equipos de esa session
     @GetMapping("/export/teams/{league}/{season}")
     public String exportTeamsToCsv(@PathVariable String league, @PathVariable String season) {
         String filePath = "D:/ProyectosWebJava/deport/excells/teams.csv";
         try {
             csvExportService.exportTeamsToCsv(filePath, league, season);
         } catch (UnirestException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return "Error al exportar los datos de los equipos";
         }
         return "Los datos de los equipos se han exportado correctamente a " + filePath;
     }

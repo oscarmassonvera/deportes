@@ -2,14 +2,14 @@ package com.deportes.deport.services.Implements;
 
 import org.springframework.stereotype.Service;
 
-import com.deportes.deport.entities.Team;
-import com.deportes.deport.entities.Venue;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import org.json.JSONArray;
@@ -159,50 +159,64 @@ public class CsvExportService {
         }
     }
 
-        
-
-        public void exportTeamsToCsv(String filePath, String league, String season) throws UnirestException {
-            try {
-                String apiUrl = String.format("https://v3.football.api-sports.io/teams?league=%s&season=%s", league, season);
-        
-                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
-                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
-                    .header("x-rapidapi-host", "v3.football.api-sports.io")
-                    .asJson();
-        
-                JSONObject jsonResponse = response.getBody().getObject();
-                JSONArray teamsArray = jsonResponse.getJSONArray("response");
-        
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-                    writer.write("ID, Nombre Equipo, Código Equipo, País, Fundado, Nacional, Logo, Nombre Sede, Dirección, Ciudad, Capacidad, Superficie, Imagen Sede\n");
-        
-                    for (int i = 0; i < teamsArray.length(); i++) {
-                        JSONObject teamData = teamsArray.getJSONObject(i);
-        
-                        String logo = teamData.getJSONObject("team").optString("logo", "");
-                        String name = teamData.getJSONObject("team").getString("name");
-                        String code = teamData.getJSONObject("team").optString("code", "");
-                        String country = teamData.getJSONObject("team").optString("country", "");
-                        int founded = teamData.getJSONObject("team").optInt("founded", 0);
-                        boolean national = teamData.getJSONObject("team").optBoolean("national", false);
-                        JSONObject venueData = teamData.getJSONObject("venue");
-                        String venueName = venueData.optString("name", "");
-                        String address = venueData.optString("address", "");
-                        String city = venueData.optString("city", "");
-                        int capacity = venueData.optInt("capacity", 0);
-                        String surface = venueData.optString("surface", "");
-                        String venueImage = venueData.optString("image", "");
-        
-                        writer.write(String.format("%d, %s, %s, %s, %d, %b, %s, %s, %s, %s, %d, %s, %s\n",
-                                i + 1, name, code, country, founded, national, logo, venueName, address, city, capacity, surface, venueImage));
-                    }
+        public void exportTeamsToCsv(String filePath, String leagueName, String season) throws UnirestException {
+    try {
+        // Buscar el ID de la liga en el archivo football_leagues.csv
+        String leagueId = "";
+        try (BufferedReader br = new BufferedReader(new FileReader("D:/ProyectosWebJava/deport/excells/football_leagues.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[1].equalsIgnoreCase(leagueName)) {
+                    leagueId = data[0];
+                    break;
                 }
-        
-                System.out.println("Los datos de todos los equipos y sus sedes se han exportado correctamente a " + filePath);
-        
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+        }if (leagueId.isEmpty()) {
+            System.out.println("No se encontró la liga en el archivo football_leagues.csv");
+            return;
+        }
+    
+        String apiUrl = String.format("https://v3.football.api-sports.io/teams?league=%s&season=%s", leagueId, season);
+    
+        HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+            .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+            .header("x-rapidapi-host", "v3.football.api-sports.io")
+            .asJson();
+    
+        JSONObject jsonResponse = response.getBody().getObject();
+        JSONArray teamsArray = jsonResponse.getJSONArray("response");
+    
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            writer.write("ID, Nombre Equipo, Código Equipo, País, Fundado, Nacional, Logo, Nombre Sede, Dirección, Ciudad, Capacidad, Superficie, Imagen Sede\n");
+    
+            for (int i = 0; i < teamsArray.length(); i++) {
+                JSONObject teamData = teamsArray.getJSONObject(i);
+    
+                String logo = teamData.getJSONObject("team").optString("logo", "");
+                String name = teamData.getJSONObject("team").getString("name");
+                String code = teamData.getJSONObject("team").optString("code", "");
+                String country = teamData.getJSONObject("team").optString("country", "");
+                int founded = teamData.getJSONObject("team").optInt("founded", 0);
+                boolean national = teamData.getJSONObject("team").optBoolean("national", false);
+                JSONObject venueData = teamData.getJSONObject("venue");
+                String venueName = venueData.optString("name", "");
+                String address = venueData.optString("address", "");
+                String city = venueData.optString("city", "");
+                int capacity = venueData.optInt("capacity", 0);
+                String surface = venueData.optString("surface", "");
+                String venueImage = venueData.optString("image", "");
+    
+                writer.write(String.format("%d, %s, %s, %s, %d, %b, %s, %s, %s, %s, %d, %s, %s\n",
+                        i + 1, name, code, country, founded, national, logo, venueName, address, city, capacity, surface, venueImage));
             }
         }
+    
+        System.out.println("Los datos de todos los equipos y sus sedes se han exportado correctamente a " + filePath);
+    
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    }
 
 }
