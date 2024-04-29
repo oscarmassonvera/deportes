@@ -31,16 +31,7 @@ public class FootballController {
 
 
 
-
-
-
-
-
-
-
-
-
-
+//OK
 
     // PARA VER LA ESTRUCTURA DE LOS DATOS QUE ME PASA EL JSON
 
