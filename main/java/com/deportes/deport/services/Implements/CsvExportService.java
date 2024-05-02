@@ -219,4 +219,42 @@ public class CsvExportService {
     }
     }
 
+    // // Obtén todas las estadísticas de un {equipo} en una {liga} y una {temporada}
+    // get("https://v3.football.api-sports.io/teams/statistics?league=39&team=33&season=2019");
+
+   
+    
+
+    public void exportTeamStatisticsToCsv(String filePath, String leagueId, String teamId, String season) {
+        try {
+            String apiUrl = String.format("https://v3.football.api-sports.io/teams/statistics?league=%s&team=%s&season=%s", leagueId, teamId, season);
+
+            JsonNode response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson()
+                    .getBody();
+
+            JSONObject jsonResponse = response.getObject();
+            JSONObject statisticsData = jsonResponse.getJSONObject("response");
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                writer.write("Statistic, Value\n");
+
+                for (String key : statisticsData.keySet()) {
+                    Object value = statisticsData.get(key);
+                    writer.write(String.format("%s, %s\n", key, value.toString()));
+                }
+            }
+
+            System.out.println("Los datos de estadísticas del equipo se han exportado correctamente a " + filePath);
+
+        } catch (UnirestException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    
 }

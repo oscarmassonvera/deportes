@@ -1,6 +1,7 @@
 package com.deportes.deport.controllers;
 
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +24,14 @@ public class FootballController {
         this.csvExportService = csvExportService;
     }
 
+    @Autowired
+    private FootballAPIService service;
 
 
 
 
 
 
-
-
-//OK
 
     // PARA VER LA ESTRUCTURA DE LOS DATOS QUE ME PASA EL JSON
 
@@ -90,5 +90,41 @@ public class FootballController {
         }
         return "Los datos de los equipos se han exportado correctamente a " + filePath;
     }
+
+
+
+
+
+
+
+
+
+    @GetMapping("/export/team-statistics/{leagueId}/{teamId}/{season}")
+    public String exportTeamStatisticsToCsvController(@PathVariable String leagueId, @PathVariable String teamId , @PathVariable String season) {
+        try {
+            String filePath = "D:/ProyectosWebJava/deport/excells/team_statistics.csv";
+            csvExportService.exportTeamStatisticsToCsv( filePath, leagueId, teamId, season );
+            return "Los datos de estadísticas del equipo se han exportado correctamente a " + filePath;
+        } catch (Exception e) {
+            return "Error al exportar los datos de estadísticas del equipo: " + e.getMessage();
+        }
+    }
     
+
+
+
+    // REVISAR EL FORMATO DE LOS DATOS Y  SUS TIPOS TEAMS STATICS 
+    @GetMapping("/team/statistics/{leagueId}/{teamId}/{season}")
+    public JSONObject getTeamStatisticsJsonController(
+            @PathVariable String leagueId,
+            @PathVariable String teamId,
+            @PathVariable String season) {
+        
+        // Llamada al método que obtiene las estadísticas del equipo en formato JSON
+        JSONObject teamStatisticsJson = service.getTeamStatisticsJson(leagueId, teamId, season);
+
+        System.out.println(teamStatisticsJson);
+        // Devolución de las estadísticas del equipo en formato JSON
+        return teamStatisticsJson;
+    }
 }
