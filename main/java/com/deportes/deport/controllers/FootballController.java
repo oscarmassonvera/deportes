@@ -103,7 +103,7 @@ public class FootballController {
     public String exportTeamStatisticsToCsvController(@PathVariable String leagueId, @PathVariable String teamId , @PathVariable String season) {
         try {
             String filePath = "D:/ProyectosWebJava/deport/excells/team_statistics.csv";
-            csvExportService.exportTeamStatisticsToCsv( filePath, leagueId, teamId, season );
+            CsvExportService.exportTeamStatisticsToCsv( filePath, leagueId, teamId, season );
             return "Los datos de estadísticas del equipo se han exportado correctamente a " + filePath;
         } catch (Exception e) {
             return "Error al exportar los datos de estadísticas del equipo: " + e.getMessage();

@@ -12,8 +12,11 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+
 
 @Service
 public class CsvExportService {
@@ -222,10 +225,8 @@ public class CsvExportService {
     // // Obtén todas las estadísticas de un {equipo} en una {liga} y una {temporada}
     // get("https://v3.football.api-sports.io/teams/statistics?league=39&team=33&season=2019");
 
-   
-    
 
-    public void exportTeamStatisticsToCsv(String filePath, String leagueId, String teamId, String season) {
+    public static void exportTeamStatisticsToCsv(String filePath, String leagueId, String teamId, String season) {
         try {
             String apiUrl = String.format("https://v3.football.api-sports.io/teams/statistics?league=%s&team=%s&season=%s", leagueId, teamId, season);
 
@@ -238,23 +239,49 @@ public class CsvExportService {
             JSONObject jsonResponse = response.getObject();
             JSONObject statisticsData = jsonResponse.getJSONObject("response");
 
+            // Escribir los datos en el archivo CSV
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                // Escribir encabezados
                 writer.write("Statistic, Value\n");
 
-                for (String key : statisticsData.keySet()) {
-                    Object value = statisticsData.get(key);
-                    writer.write(String.format("%s, %s\n", key, value.toString()));
-                }
+                // Recorrer el objeto statisticsData y escribir cada clave y valor en una línea del archivo CSV
+                writeDataToCsv(statisticsData, "", writer);
             }
 
             System.out.println("Los datos de estadísticas del equipo se han exportado correctamente a " + filePath);
 
-        } catch (UnirestException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    private static void writeDataToCsv(JSONObject data, String parentKey, BufferedWriter writer) throws IOException {
+        for (String key : data.keySet()) {
+            Object value = data.get(key);
+
+            if (value instanceof JSONObject) {
+                // Si el valor es un JSONObject, llamamos recursivamente a esta función
+                writeDataToCsv((JSONObject) value, parentKey + key + ".", writer);
+            } else if (value instanceof JSONArray) {
+                // Si el valor es un JSONArray, escribimos cada elemento del array en una nueva línea del archivo CSV
+                JSONArray jsonArray = (JSONArray) value;
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    writer.write(String.format("%s%s[%d], %s\n", parentKey, key, i, jsonArray.get(i).toString()));
+                }
+            } else {
+                // Si el valor no es un JSONObject ni un JSONArray, lo escribimos en el archivo CSV
+                writer.write(String.format("%s%s, %s\n", parentKey, key, value.toString()));
+            }
+        }
+    }
+
+    // AKI TERMINA EL CODIGO DE TEAMSTADICTIC   OK 
 
 
-    
+
+
+
+
+
+
 }
