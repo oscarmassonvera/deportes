@@ -1,5 +1,6 @@
 package com.deportes.deport.controllers;
 
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -138,6 +139,20 @@ public class FootballController {
 
 
 
+
+
+
+
+
+
+    // Venue o estadios 
+
+    @GetMapping("/venues/{country}")
+    public ResponseEntity<String> exportVenuesToCsv(@PathVariable String country) {
+        String filePath = "D:/ProyectosWebJava/deport/excells/Estadios.csv";
+        CsvExportService.fetchAndSaveVenues(country, filePath);
+        return ResponseEntity.ok("Los datos de venues se han exportado correctamente a " + filePath);
+    }
 
 
 

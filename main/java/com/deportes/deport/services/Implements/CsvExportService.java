@@ -6,6 +6,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.opencsv.CSVWriter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,7 +22,7 @@ import org.json.JSONObject;
 @Service
 public class CsvExportService {
 
-    //----------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
     public void exportFootballLeaguesToCsv(String filePath) {
         try {
@@ -72,7 +73,7 @@ public class CsvExportService {
         }
     }
 
-        //----------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
     public void exportTimezonesToCsv(String filePath) {
         try {
@@ -110,7 +111,7 @@ public class CsvExportService {
         }
     }
 
-        //----------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
     public void exportCountriesToCsv(String filePath) {
         try {
@@ -141,7 +142,7 @@ public class CsvExportService {
         }
     }
 
-        //----------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
     public void exportLeaguesSeasonsToCsv(String filePath) {
         try {
@@ -170,7 +171,7 @@ public class CsvExportService {
         }
     }
 
-        //----------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
         public void exportTeamsToCsv(String filePath, String leagueName, String season) throws UnirestException {
     try {
@@ -287,8 +288,7 @@ public class CsvExportService {
 
 
 
-    //----------------------------------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
     public static void exportTeamStatisticsToCsv(String filePath, String leagueName, String teamName, String season) {
         try {
@@ -390,8 +390,7 @@ public class CsvExportService {
 
     // AKI TERMINA EL CODIGO DE TEAMSTADICTIC   OK 
 
-        //----------------------------------------------------------------------------------------------//
-
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
     // team por nombre get("https://v3.football.api-sports.io/teams?name=manchester united");
     // DEVUELVE EL ID DEL EQUIPO DADO
@@ -436,10 +435,96 @@ public class CsvExportService {
         }
     }
 
-        //----------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+        // Venues ESTADIOS
+
+        public static void fetchAndSaveVenues(String country, String filePath) {
+            try {
+                // Construir la URL de la API
+                String apiUrl = "https://v3.football.api-sports.io/venues?country=" + country;
+    
+                // Realizar la solicitud HTTP GET
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+    
+                // Obtener el cuerpo de la respuesta
+                JsonNode responseBody = response.getBody();
+    
+                // Obtener el arreglo de venues del cuerpo de la respuesta
+                JSONArray venuesArray = responseBody.getObject().getJSONArray("response");
+                
+
+                //System.out.println(venuesArray);
 
 
-        // Venues 
+                // Guardar los datos en un archivo CSV
+                saveDataToCsv(venuesArray, filePath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    
+        private static void saveDataToCsv(JSONArray venuesArray, String filePath) {
+            try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
+                // Escribir encabezados en el archivo CSV
+                writer.writeNext(new String[]{"ID", "Name", "Country", "Image", "Address", "City", "Capacity", "Surface"});
+        
+                // Iterar sobre cada objeto de venue en el JSONArray y escribir los datos en el archivo CSV
+                for (int i = 0; i < venuesArray.length(); i++) {
+                    JSONObject venue = venuesArray.getJSONObject(i);
+                    String id = venue.isNull("id") ? "" : String.valueOf(venue.getInt("id"));
+                    String name = venue.isNull("name") ? "" : venue.getString("name");
+                    String country = venue.isNull("country") ? "" : venue.getString("country");
+                    String image = venue.isNull("image") ? "" : venue.getString("image");
+                    String address = venue.isNull("address") ? "" : venue.getString("address");
+                    String city = venue.isNull("city") ? "" : venue.optString("city", "");
+                    String capacity = venue.isNull("capacity") ? "" : String.valueOf(venue.getInt("capacity"));
+                    String surface = venue.isNull("surface") ? "" : venue.getString("surface");
+        
+                    writer.writeNext(new String[]{id, name, country, image, address, city, capacity, surface});
+                }
+        
+                System.out.println("Los datos se han guardado correctamente en " + filePath);
+            } catch (IOException e) {
+                System.err.println("Error al guardar los datos en " + filePath + ": " + e.getMessage());
+            }
+        }
+        
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+        // Standings
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }
+
+

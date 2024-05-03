@@ -5,10 +5,16 @@ public class Venue {
     private String name;
     private String address;
     private String city;
+    private String country;
     private int capacity;
     private String surface;
     private String image;
 
+
+    public Venue(int int1, String string, String string2, String string3, String string4, int int2, String string5,
+            String string6) {
+        //TODO Auto-generated constructor stub
+    }
 
     public int getId() {
         return this.id;
@@ -64,6 +70,14 @@ public class Venue {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getCountry() {
+        return this.country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
 }
