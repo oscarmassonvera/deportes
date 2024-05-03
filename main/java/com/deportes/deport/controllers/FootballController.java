@@ -1,9 +1,9 @@
 package com.deportes.deport.controllers;
 
-
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -91,27 +91,23 @@ public class FootballController {
         return "Los datos de los equipos se han exportado correctamente a " + filePath;
     }
 
-
-
-
-
-
-
-
-
-    @GetMapping("/export/team-statistics/{leagueId}/{teamId}/{season}")
-    public String exportTeamStatisticsToCsvController(@PathVariable String leagueId, @PathVariable String teamId , @PathVariable String season) {
+    @GetMapping(value = "/{leagueName}/{teamName}/{season}", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> exportTeamStatisticsToCsvController(
+            @PathVariable String leagueName,
+            @PathVariable String teamName,
+            @PathVariable String season) {
         try {
+            // Llamar al método exportTeamStatisticsToCsv
             String filePath = "D:/ProyectosWebJava/deport/excells/team_statistics.csv";
-            CsvExportService.exportTeamStatisticsToCsv( filePath, leagueId, teamId, season );
-            return "Los datos de estadísticas del equipo se han exportado correctamente a " + filePath;
+            CsvExportService.exportTeamStatisticsToCsv(filePath, leagueName, teamName, season);
+
+            return ResponseEntity.ok("Los datos de estadísticas del equipo se han exportado correctamente a " + filePath);
         } catch (Exception e) {
-            return "Error al exportar los datos de estadísticas del equipo: " + e.getMessage();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al exportar los datos de estadísticas del equipo: " + e.getMessage());
         }
     }
-    
-
-
 
     // REVISAR EL FORMATO DE LOS DATOS Y  SUS TIPOS TEAMS STATICS 
     @GetMapping("/team/statistics/{leagueId}/{teamId}/{season}")
@@ -127,4 +123,23 @@ public class FootballController {
         // Devolución de las estadísticas del equipo en formato JSON
         return teamStatisticsJson;
     }
+
+
+    // Team por nombre 
+    @GetMapping("/find-team-id/{teamName}")
+    public String findTeamId(@PathVariable String teamName) {
+        Integer teamId = CsvExportService.findTeamIdByName(teamName);
+        if (!teamId.equals(0)) {
+            return "El ID del equipo '" + teamName + "' es: " + teamId;
+        } else {
+            return "No se encontró ningún equipo con el nombre '" + teamName + "'";
+        }
+    }
+
+
+
+
+
+
+
 }

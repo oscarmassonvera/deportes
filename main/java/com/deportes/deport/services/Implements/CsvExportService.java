@@ -21,6 +21,8 @@ import org.json.JSONObject;
 @Service
 public class CsvExportService {
 
+    //----------------------------------------------------------------------------------------------//
+
     public void exportFootballLeaguesToCsv(String filePath) {
         try {
             // Hacer la solicitud HTTP
@@ -70,6 +72,8 @@ public class CsvExportService {
         }
     }
 
+        //----------------------------------------------------------------------------------------------//
+
     public void exportTimezonesToCsv(String filePath) {
         try {
             // Hacer la solicitud HTTP
@@ -106,6 +110,8 @@ public class CsvExportService {
         }
     }
 
+        //----------------------------------------------------------------------------------------------//
+
     public void exportCountriesToCsv(String filePath) {
         try {
             HttpResponse<JsonNode> response = Unirest.get("https://v3.football.api-sports.io/countries")
@@ -135,6 +141,8 @@ public class CsvExportService {
         }
     }
 
+        //----------------------------------------------------------------------------------------------//
+
     public void exportLeaguesSeasonsToCsv(String filePath) {
         try {
             HttpResponse<JsonNode> response = Unirest.get("https://v3.football.api-sports.io/leagues/seasons")
@@ -161,6 +169,8 @@ public class CsvExportService {
             e.printStackTrace();
         }
     }
+
+        //----------------------------------------------------------------------------------------------//
 
         public void exportTeamsToCsv(String filePath, String leagueName, String season) throws UnirestException {
     try {
@@ -226,62 +236,210 @@ public class CsvExportService {
     // get("https://v3.football.api-sports.io/teams/statistics?league=39&team=33&season=2019");
 
 
-    public static void exportTeamStatisticsToCsv(String filePath, String leagueId, String teamId, String season) {
+    // public static void exportTeamStatisticsToCsv(String filePath, String leagueId, String teamId, String season) {
+    //     try {
+    //         String apiUrl = String.format("https://v3.football.api-sports.io/teams/statistics?league=%s&team=%s&season=%s", leagueId, teamId, season);
+
+    //         JsonNode response = Unirest.get(apiUrl)
+    //                 .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+    //                 .header("x-rapidapi-host", "v3.football.api-sports.io")
+    //                 .asJson()
+    //                 .getBody();
+
+    //         JSONObject jsonResponse = response.getObject();
+    //         JSONObject statisticsData = jsonResponse.getJSONObject("response");
+
+    //         // Escribir los datos en el archivo CSV
+    //         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+    //             // Escribir encabezados
+    //             writer.write("Statistic, Value\n");
+
+    //             // Recorrer el objeto statisticsData y escribir cada clave y valor en una línea del archivo CSV
+    //             writeDataToCsv(statisticsData, "", writer);
+    //         }
+
+    //         System.out.println("Los datos de estadísticas del equipo se han exportado correctamente a " + filePath);
+
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //     }
+    // }
+
+    // private static void writeDataToCsv(JSONObject data, String parentKey, BufferedWriter writer) throws IOException {
+    //     for (String key : data.keySet()) {
+    //         Object value = data.get(key);
+
+    //         if (value instanceof JSONObject) {
+    //             // Si el valor es un JSONObject, llamamos recursivamente a esta función
+    //             writeDataToCsv((JSONObject) value, parentKey + key + ".", writer);
+    //         } else if (value instanceof JSONArray) {
+    //             // Si el valor es un JSONArray, escribimos cada elemento del array en una nueva línea del archivo CSV
+    //             JSONArray jsonArray = (JSONArray) value;
+    //             for (int i = 0; i < jsonArray.length(); i++) {
+    //                 writer.write(String.format("%s%s[%d], %s\n", parentKey, key, i, jsonArray.get(i).toString()));
+    //             }
+    //         } else {
+    //             // Si el valor no es un JSONObject ni un JSONArray, lo escribimos en el archivo CSV
+    //             writer.write(String.format("%s%s, %s\n", parentKey, key, value.toString()));
+    //         }
+    //     }
+    // }
+
+
+
+    //----------------------------------------------------------------------------------------------//
+
+
+    public static void exportTeamStatisticsToCsv(String filePath, String leagueName, String teamName, String season) {
         try {
-            String apiUrl = String.format("https://v3.football.api-sports.io/teams/statistics?league=%s&team=%s&season=%s", leagueId, teamId, season);
-
-            JsonNode response = Unirest.get(apiUrl)
-                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
-                    .header("x-rapidapi-host", "v3.football.api-sports.io")
-                    .asJson()
-                    .getBody();
-
-            JSONObject jsonResponse = response.getObject();
-            JSONObject statisticsData = jsonResponse.getJSONObject("response");
-
-            // Escribir los datos en el archivo CSV
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-                // Escribir encabezados
-                writer.write("Statistic, Value\n");
-
-                // Recorrer el objeto statisticsData y escribir cada clave y valor en una línea del archivo CSV
-                writeDataToCsv(statisticsData, "", writer);
+            System.out.println(leagueName);
+            // Buscar el ID de la liga en el archivo football_leagues.csv
+            String leagueId = findLeagueIdByName(leagueName);
+            if (leagueId.isEmpty()) {
+                System.out.println("No se encontró la liga en el archivo football_leagues.csv");
+                return;
             }
 
-            System.out.println("Los datos de estadísticas del equipo se han exportado correctamente a " + filePath);
+            // Buscar el ID del equipo usando el método findTeamIdByName
+            Integer teamId = findTeamIdByName(teamName);
+            if (teamId == null || teamId == 0) {
+                System.out.println("No se encontró el equipo");
+                return;
+            }
+
+            // Llamar al método original exportTeamStatisticsToCsv con los IDs encontrados
+            exportTeamStatisticsToCsvId(filePath, leagueId, teamId.toString(), season);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void writeDataToCsv(JSONObject data, String parentKey, BufferedWriter writer) throws IOException {
-        for (String key : data.keySet()) {
-            Object value = data.get(key);
+    private static String findLeagueIdByName(String leagueName) {
+        String csvFile = "D:/ProyectosWebJava/deport/excells/football_leagues.csv";
+        String line;
+        String csvSplitBy = ",";
+        String leagueId = "";
 
-            if (value instanceof JSONObject) {
-                // Si el valor es un JSONObject, llamamos recursivamente a esta función
-                writeDataToCsv((JSONObject) value, parentKey + key + ".", writer);
-            } else if (value instanceof JSONArray) {
-                // Si el valor es un JSONArray, escribimos cada elemento del array en una nueva línea del archivo CSV
-                JSONArray jsonArray = (JSONArray) value;
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    writer.write(String.format("%s%s[%d], %s\n", parentKey, key, i, jsonArray.get(i).toString()));
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(csvSplitBy);
+                if (data.length >= 2 && data[1].equalsIgnoreCase(leagueName)) {
+                    leagueId = data[0];
+                    break;
                 }
-            } else {
-                // Si el valor no es un JSONObject ni un JSONArray, lo escribimos en el archivo CSV
-                writer.write(String.format("%s%s, %s\n", parentKey, key, value.toString()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return leagueId;
+    }
+
+        public static void exportTeamStatisticsToCsvId(String filePath, String leagueId, String teamId, String season) {
+            try {
+                String apiUrl = String.format("https://v3.football.api-sports.io/teams/statistics?league=%s&team=%s&season=%s", leagueId, teamId, season);
+    
+                JsonNode response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson()
+                        .getBody();
+    
+                JSONObject jsonResponse = response.getObject();
+                JSONObject statisticsData = jsonResponse.getJSONObject("response");
+    
+                // Escribir los datos en el archivo CSV
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                    // Escribir encabezados
+                    writer.write("Statistic, Value\n");
+    
+                    // Recorrer el objeto statisticsData y escribir cada clave y valor en una línea del archivo CSV
+                    writeDataToCsv(statisticsData, "", writer);
+                }
+    
+                System.out.println("Los datos de estadísticas del equipo se han exportado correctamente a " + filePath);
+    
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-    }
+    
+        private static void writeDataToCsv(JSONObject data, String parentKey, BufferedWriter writer) throws IOException {
+            for (String key : data.keySet()) {
+                Object value = data.get(key);
+    
+                if (value instanceof JSONObject) {
+                    // Si el valor es un JSONObject, llamamos recursivamente a esta función
+                    writeDataToCsv((JSONObject) value, parentKey + key + ".", writer);
+                } else if (value instanceof JSONArray) {
+                    // Si el valor es un JSONArray, escribimos cada elemento del array en una nueva línea del archivo CSV
+                    JSONArray jsonArray = (JSONArray) value;
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        writer.write(String.format("%s%s[%d], %s\n", parentKey, key, i, jsonArray.get(i).toString()));
+                    }
+                } else {
+                    // Si el valor no es un JSONObject ni un JSONArray, lo escribimos en el archivo CSV
+                    writer.write(String.format("%s%s, %s\n", parentKey, key, value.toString()));
+                }
+            }
+        }
+
+
+
+
 
     // AKI TERMINA EL CODIGO DE TEAMSTADICTIC   OK 
 
+        //----------------------------------------------------------------------------------------------//
 
 
+    // team por nombre get("https://v3.football.api-sports.io/teams?name=manchester united");
+    // DEVUELVE EL ID DEL EQUIPO DADO
+    public static Integer findTeamIdByName(String teamName) {
+        try {
+            String apiUrl = "https://v3.football.api-sports.io/teams?name=" + teamName;
+
+            // Realizar la solicitud HTTP GET
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+
+            // Analizar la respuesta JSON
+            JSONObject jsonResponse = response.getBody().getObject();
+            JSONArray teamsArray = jsonResponse.getJSONArray("response");
+
+            // Verificar si se encontraron equipos
+            if (teamsArray.length() > 0) {
+                // Tomar el primer equipo de la lista (asumiendo que el nombre es único)
+                JSONObject team = teamsArray.getJSONObject(0);
+                
+                // Verificar si el objeto del equipo contiene la clave "team"
+                if (team.has("team")) {
+                    // Extraer el objeto del equipo
+                    JSONObject teamObject = team.getJSONObject("team");
+                    
+                    // Verificar si el objeto del equipo contiene la clave "id"
+                    if (teamObject.has("id")) {
+                        // Devolver el ID del equipo
+                        return teamObject.getInt("id");
+                    }
+                }
+            }
+
+            // Si no se encuentra ningún equipo o no se puede extraer el ID, devolver un 0
+            return 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            // En caso de error, devolver una cadena vacía
+            return 0;
+        }
+    }
+
+        //----------------------------------------------------------------------------------------------//
 
 
-
+        // Venues 
 
 
 }
