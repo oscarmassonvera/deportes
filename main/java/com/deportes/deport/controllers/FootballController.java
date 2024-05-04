@@ -137,14 +137,6 @@ public class FootballController {
         }
     }
 
-
-
-
-
-
-
-
-
     // Venue o estadios 
 
     @GetMapping("/venues/{country}")
@@ -153,6 +145,50 @@ public class FootballController {
         CsvExportService.fetchAndSaveVenues(country, filePath);
         return ResponseEntity.ok("Los datos de venues se han exportado correctamente a " + filePath);
     }
+
+
+
+
+
+    // STADING CLASIFICACIONES PARA HACER PRIN EN CONSOLA 
+
+    @GetMapping("/standings/print/{leagueId}/{season}")
+    public void fetchAndPrintStandings(
+            @PathVariable int leagueId,
+            @PathVariable int season) {
+        csvExportService.fetchAndPrintStandings(leagueId, season);
+    }
+
+    // Guardar en archivo csv 
+
+    @GetMapping("/standings/csv/{leagueName:.+}/{season}")
+    public ResponseEntity<String> saveStandings(@PathVariable("leagueName") String leagueName, @PathVariable("season") int season) {
+        try {
+            String filePath = "D:/ProyectosWebJava/deport/excells/Clasificaciones.csv";
+            String leaguesFilePath = "D:/ProyectosWebJava/deport/excells/football_leagues.csv";
+            System.out.println(leagueName);
+            int leagueId = CsvExportService.getLeagueId(leagueName, leaguesFilePath);
+            System.out.println(leagueId);
+            if (leagueId == -1) {
+                return new ResponseEntity<>("Error al guardar los datos", HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                CsvExportService.fetchAndSaveStandings(leagueId, season, filePath);
+                return new ResponseEntity<>("Datos guardados en el archivo CSV: " + filePath, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error al guardar los datos", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+
+
+
+
+
+    
+
+
 
 
 

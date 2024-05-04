@@ -497,13 +497,134 @@ public class CsvExportService {
 
         // Standings
 
+        // Get all Standings from one {league} & {season} Informacion de clasificacion de toda la liga en una season especifica
+        // get("https://v3.football.api-sports.io/standings?league=39&season=2019");
+
+
+        // imprimir por consola la estructura de datos 
+
+        public void fetchAndPrintStandings(int leagueId, int season) {
+            try {
+                // Construir la URL de la API con los parámetros league y season
+                String apiUrl = String.format("https://v3.football.api-sports.io/standings?league=%d&season=%d", leagueId, season);
+        
+                // Realizar la solicitud HTTP GET
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+        
+                // Obtener el cuerpo de la respuesta
+                JsonNode responseBody = response.getBody();
+        
+                // Imprimir los datos de la respuesta JSON por consola
+                System.out.println(responseBody.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
 
 
+        // Guardar en archivo csv 
+
+
+        public static int getLeagueId(String leagueName, String leaguesFilePath) {
+            try {
+                try (BufferedReader reader = new BufferedReader(new FileReader(leaguesFilePath))) {
+                    String line;
+        
+                    // Leer el archivo CSV línea por línea
+                    while ((line = reader.readLine()) != null) {
+                        // Dividir la línea en partes utilizando la coma como separador
+                        String[] parts = line.split(",");
+                        if (parts.length >= 2) {
+                            // Obtener el nombre de la liga (asumiendo que es el segundo campo)
+                            String leagueNameFromFile = parts[1].trim();
+                            // Verificar si el nombre de la liga coincide aproximadamente con el nombre proporcionado
+                            if (leagueNameFromFile.equalsIgnoreCase(leagueName.trim())) {
+                                // Devolver el ID de la liga
+                                return Integer.parseInt(parts[0].trim());
+                            }
+                        }
+                    }
+                }
+                // Si no se encuentra el nombre de la liga, devolver -1
+                return -1;
+        
+            } catch (Exception e) {
+                e.printStackTrace();
+                return -1;
+            }
+        }
+        
+
+
+        public static void fetchAndSaveStandings(int leagueId, int season, String filePath) {
+            try {
+                // Construir la URL de la API con los parámetros league y season
+                String apiUrl = String.format("https://v3.football.api-sports.io/standings?league=%d&season=%d", leagueId, season);
+        
+                // Realizar la solicitud HTTP GET
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+        
+                // Obtener el cuerpo de la respuesta
+                JsonNode responseBody = response.getBody();
+        
+                // Extraer los datos de la respuesta JSON
+                JSONObject leagueData = responseBody.getObject().getJSONArray("response").getJSONObject(0).getJSONObject("league");
+                JSONArray standingsArray = leagueData.getJSONArray("standings").getJSONArray(0);
+        
+                // Crear un objeto FileWriter para escribir en el archivo CSV
+                FileWriter csvWriter = new FileWriter(filePath);
+        
+                // Escribir la cabecera en el archivo CSV
+                csvWriter.append("Posición,Equipo,PJ,PG,PE,PP,GF,GC,DG,Puntos,Liga,País,Bandera,Logo,Descripción,Actualización\n");
+        
+                // Iterar sobre los datos y escribir cada fila en el archivo CSV
+                for (int i = 0; i < standingsArray.length(); i++) {
+                    JSONObject teamData = standingsArray.getJSONObject(i);
+                    String position = teamData.isNull("rank") ? "" : String.valueOf(teamData.getInt("rank"));
+                    String teamName = teamData.getJSONObject("team").isNull("name") ? "" : teamData.getJSONObject("team").getString("name");
+                    String played = teamData.getJSONObject("all").isNull("played") ? "0" : String.valueOf(teamData.getJSONObject("all").getInt("played"));
+                    String win = teamData.getJSONObject("all").isNull("win") ? "0" : String.valueOf(teamData.getJSONObject("all").getInt("win"));
+                    String draw = teamData.getJSONObject("all").isNull("draw") ? "0" : String.valueOf(teamData.getJSONObject("all").getInt("draw"));
+                    String lose = teamData.getJSONObject("all").isNull("lose") ? "0" : String.valueOf(teamData.getJSONObject("all").getInt("lose"));
+                    String goalsFor = teamData.getJSONObject("all").getJSONObject("goals").isNull("for") ? "0" : String.valueOf(teamData.getJSONObject("all").getJSONObject("goals").getInt("for"));
+                    String goalsAgainst = teamData.getJSONObject("all").getJSONObject("goals").isNull("against") ? "0" : String.valueOf(teamData.getJSONObject("all").getJSONObject("goals").getInt("against"));
+                    String goalsDiff = teamData.isNull("goalsDiff") ? "0" : String.valueOf(teamData.getInt("goalsDiff"));
+                    String points = teamData.isNull("points") ? "0" : String.valueOf(teamData.getInt("points"));
+                    String league = leagueData.isNull("name") ? "" : leagueData.getString("name");
+                    String country = leagueData.isNull("country") ? "" : leagueData.getString("country");
+                    String flag = leagueData.isNull("flag") ? "" : leagueData.getString("flag");
+                    String logo = leagueData.isNull("logo") ? "" : leagueData.getString("logo");
+                    String description = teamData.isNull("description") ? "" : teamData.getString("description");
+                    String update = teamData.isNull("update") ? "" : teamData.getString("update");
+        
+                    // Escribir la fila en el archivo CSV
+                    csvWriter.append(position + "," + teamName + "," + played + "," + win + "," + draw + "," + lose + ","
+                            + goalsFor + "," + goalsAgainst + "," + goalsDiff + "," + points + "," + league + ","
+                            + country + "," + flag + "," + logo + "," + description + "," + update + "\n");
+                }
+        
+                // Cerrar el objeto FileWriter
+                csvWriter.flush();
+                csvWriter.close();
+        
+                // Imprimir mensaje de éxito
+                System.out.println("Datos guardados en el archivo CSV: " + filePath);
+        
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
 
 
-
+//----------------------------------------------------------------------------------------------------------------------------------------//
 
 
 
