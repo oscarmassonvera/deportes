@@ -627,19 +627,162 @@ public class CsvExportService {
 //----------------------------------------------------------------------------------------------------------------------------------------//
 
 
+    // Fixtures
+    // Rounds
+
+
+    // IMPRIMIR POR CONSOLA 
+
+    public static void fetchRounds(int leagueId, int season) throws UnirestException {
+        String apiUrl = String.format("https://v3.football.api-sports.io/fixtures/rounds?league=%d&season=%d", leagueId, season);
+
+        // Realizar la solicitud HTTP GET
+        HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+
+        // Obtener el cuerpo de la respuesta
+        JsonNode responseBody = response.getBody();
+
+        // Mostrar el JSON por consola
+        System.out.println(responseBody);
+    }
+
+
+    // save csv
 
 
 
+    public static void fetchRounds(int leagueId, int season, String filePath) throws UnirestException {
+        try {
+            String apiUrl = String.format("https://v3.football.api-sports.io/fixtures/rounds?league=%d&season=%d", leagueId, season);
+
+            // Realizar la solicitud HTTP GET
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                            .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                            .header("x-rapidapi-host", "v3.football.api-sports.io")
+                            .asJson();
+
+            // Obtener el cuerpo de la respuesta
+            JsonNode responseBody = response.getBody();
+
+            // Extraer los datos del JSON
+            JSONArray roundsArray = responseBody.getObject().getJSONArray("response");
+
+            // Crear un objeto FileWriter para escribir en el archivo CSV
+            FileWriter csvWriter = new FileWriter(filePath);
+
+            // Escribir las rondas en el archivo CSV
+            for (int i = 0; i < roundsArray.length(); i++) {
+                String round = roundsArray.getString(i);
+                csvWriter.append(round + "\n");
+            }
+
+            // Cerrar el objeto FileWriter
+            csvWriter.flush();
+            csvWriter.close();
+
+            // Imprimir mensaje de éxito
+            System.out.println("Datos guardados en el archivo CSV: " + filePath);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+
+    // Fixtures - calendario imprimir en consola 
+    // Obtener todos los partidos disponibles de una liga y temporada específica
+    // https://v3.football.api-sports.io/fixtures?league=39&season=2019
 
 
 
+    // Imprimir por consola     
+
+    public static void fetchFixtures(int leagueId, int season) throws UnirestException {
+        String apiUrl = String.format("https://v3.football.api-sports.io/fixtures?league=%d&season=%d", leagueId, season);
+    
+        // Realizar la solicitud HTTP GET
+        HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+    
+        // Obtener el cuerpo de la respuesta
+        JsonNode responseBody = response.getBody();
+    
+        // Mostrar el JSON por consola
+        System.out.println(responseBody);
+    }
+
+
+    // save csv 
+
+
+    public static void fetchAndSaveFixtures(int leagueId, int season, String filePath) {
+        try {
+            // Construir la URL de la API con los parámetros league y season
+            String apiUrl = String.format("https://v3.football.api-sports.io/fixtures?league=%d&season=%d", leagueId, season);
+    
+            // Realizar la solicitud HTTP GET
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+    
+            // Obtener el cuerpo de la respuesta
+            JsonNode responseBody = response.getBody();
+    
+            // Extraer los datos del JSON
+            JSONArray fixturesArray = responseBody.getObject().getJSONArray("response");
+    
+            // Crear un objeto FileWriter para escribir en el archivo CSV
+            FileWriter csvWriter = new FileWriter(filePath);
+    
+            // Escribir la cabecera en el archivo CSV
+            csvWriter.append("ID, Fecha, Ciudad, Estadio, Equipo Local, Logo Equipo Local, Equipo Visitante, Logo Equipo Visitante\n");
+    
+            // Iterar sobre los datos y escribir cada fila en el archivo CSV
+            for (int i = 0; i < fixturesArray.length(); i++) {
+                JSONObject fixture = fixturesArray.getJSONObject(i);
+                String id = String.valueOf(fixture.getJSONObject("fixture").getInt("id"));
+                String date = fixture.getJSONObject("fixture").getString("date").split("T")[0];
+                String city = fixture.getJSONObject("fixture").getJSONObject("venue").getString("city");
+                String stadium = fixture.getJSONObject("fixture").getJSONObject("venue").getString("name");
+                String homeTeam = fixture.getJSONObject("teams").getJSONObject("home").getString("name");
+                String homeTeamLogo = fixture.getJSONObject("teams").getJSONObject("home").getString("logo");
+                String awayTeam = fixture.getJSONObject("teams").getJSONObject("away").getString("name");
+                String awayTeamLogo = fixture.getJSONObject("teams").getJSONObject("away").getString("logo");
+    
+                // Escribir la fila en el archivo CSV
+                csvWriter.append(id + "," + date + "," + city + "," + stadium + "," + homeTeam + "," + homeTeamLogo + "," + awayTeam + "," + awayTeamLogo + "\n");
+            }
+    
+            // Cerrar el objeto FileWriter
+            csvWriter.flush();
+            csvWriter.close();
+    
+            // Imprimir mensaje de éxito
+            System.out.println("Datos guardados en el archivo CSV: " + filePath);
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+    // Calendario partido por su id info importante para apostar 
+
+    // https://v3.football.api-sports.io/fixtures?id=215662
 
 
 
-
-
-
-
+    
 
 
 

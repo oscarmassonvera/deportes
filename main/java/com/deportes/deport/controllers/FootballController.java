@@ -183,12 +183,75 @@ public class FootballController {
     
 
 
+    // ROUNDS por consola 
+
+    @GetMapping("/rounds/print/{leagueId}/{season}")
+    public void fetchAndPrintRounds(
+            @PathVariable int leagueId,
+            @PathVariable int season) throws UnirestException {
+        CsvExportService.fetchRounds(leagueId, season);
+    }
 
 
+    // ROUNDS save csv
+    
+    
+    @GetMapping("/rounds/csv/{leagueName:.+}/{season}")
+    public ResponseEntity<String> saveCsvRounds
+        ( @PathVariable("leagueName") String leagueName, @PathVariable("season") int season) throws UnirestException {
+        try {
+            String filePath = "D:/ProyectosWebJava/deport/excells/Rounds.csv";
+            String leaguesFilePath = "D:/ProyectosWebJava/deport/excells/football_leagues.csv";
+            System.out.println(leagueName);
+            int leagueId = CsvExportService.getLeagueId(leagueName, leaguesFilePath);
+            System.out.println(leagueId);
+            if (leagueId == -1) {
+                return new ResponseEntity<>("Error al guardar los datos", HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                CsvExportService.fetchRounds(leagueId, season, filePath);
+                return new ResponseEntity<>("Datos guardados en el archivo CSV: " + filePath, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error al guardar los datos", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // Fixtures calendario por consola 
+
+    @GetMapping("/fixture/print/{leagueId}/{season}")
+    public void fetchAndPrintfixture(
+            @PathVariable int leagueId,
+            @PathVariable int season) throws UnirestException {
+        CsvExportService.fetchFixtures(leagueId, season);
+    }
+
+
+    // Fixtures calendario por csv 
 
     
-
-
+    
+    @GetMapping("/fixture/csv/{leagueName:.+}/{season}")
+    public ResponseEntity<String> saveCsvAllFixtures
+        ( @PathVariable("leagueName") String leagueName, @PathVariable("season") int season) throws UnirestException {
+        try {
+            String filePath = "D:/ProyectosWebJava/deport/excells/PartidosAll.csv";
+            String leaguesFilePath = "D:/ProyectosWebJava/deport/excells/football_leagues.csv";
+            System.out.println(leagueName);
+            int leagueId = CsvExportService.getLeagueId(leagueName, leaguesFilePath);
+            System.out.println(leagueId);
+            if (leagueId == -1) {
+                return new ResponseEntity<>("Error al guardar los datos", HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                CsvExportService.fetchAndSaveFixtures(leagueId, season, filePath);
+                return new ResponseEntity<>("Datos guardados en el archivo CSV: " + filePath, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Error al guardar los datos", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 
