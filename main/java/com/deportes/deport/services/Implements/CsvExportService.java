@@ -892,7 +892,7 @@ public class CsvExportService {
 
 //----------------------------------------------------------------------------------------------------------------------------------------//
 
-    // Partidos Ya jugados info
+    // Partidos Ya jugados info                                         (ESTA DE MAS ?)
 
         // imprimir por pantalla 
 
@@ -1018,15 +1018,110 @@ public class CsvExportService {
 
 //----------------------------------------------------------------------------------------------------------------------------------------//
  
-// Statistics Estadisticas de partido especificado por su id ( funciona como la anterior con el id del partido )
+    // Statistics Estadisticas de partido especificado por su id ( funciona como la anterior con el id del partido )
+
+    // URL: https://v3.football.api-sports.io/fixtures/statistics?fixture=215662
+    // Esta solicitud devuelve todas las estadísticas disponibles para el partido con el ID de fixture 215662. 
+    // Estas estadísticas pueden incluir datos como posesión del balón, tiros a puerta, faltas, tarjetas, entre otros.
 
     // imprimir pantalla
 
-
+    public static void fetchFixtureStatistics(int fixtureId) {
+        try {
+            // Construir la URL de la API
+            String apiUrl = "https://v3.football.api-sports.io/fixtures/statistics?fixture=" + fixtureId;
+    
+            // Realizar la solicitud HTTP GET
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+    
+            // Obtener el cuerpo de la respuesta
+            JsonNode responseBody = response.getBody();
+    
+            // Mostrar el JSON por consola
+            System.out.println(responseBody);
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 
     // save csv 
+
+    public static void fetchAndSaveFixtureStatistics(String fixtureId, String filePath) throws IOException, UnirestException {
+        // Construir la URL de la API con el ID del fixture
+        String apiUrl = "https://v3.football.api-sports.io/fixtures/statistics?fixture=" + fixtureId;
+
+        // Realizar la solicitud HTTP GET utilizando Unirest
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+
+        // Verificar si la solicitud fue exitosa
+        if (response.getStatus() == 200) {
+            // Obtener el cuerpo de la respuesta como un objeto JSON
+            JSONObject responseBody = response.getBody().getObject();
+
+            // Extraer los datos del JSON
+            JSONArray responseArray = responseBody.getJSONArray("response");
+            FileWriter csvWriter = new FileWriter(filePath);
+
+            // Escribir las cabeceras en el archivo CSV
+            csvWriter.append("Team,Statistic Type,Value\n");
+
+            // Iterar sobre los datos de cada equipo en el partido
+            for (int i = 0; i < responseArray.length(); i++) {
+                JSONObject fixtureData = responseArray.getJSONObject(i);
+                JSONObject teamData = fixtureData.getJSONObject("team");
+                String teamName = teamData.getString("name");
+                JSONArray statisticsArray = fixtureData.getJSONArray("statistics");
+
+                // Escribir las estadísticas del equipo en el archivo CSV
+                for (int j = 0; j < statisticsArray.length(); j++) {
+                    JSONObject statistic = statisticsArray.getJSONObject(j);
+                    String statisticType = statistic.getString("type");
+                    String value = statistic.optString("value", ""); // Si el valor es nulo, poner un string vacío
+                    writeCsvLine(csvWriter, teamName, statisticType, value);
+                }
+            }
+
+            // Cerrar el objeto FileWriter
+            csvWriter.flush();
+            csvWriter.close();
+
+            // Imprimir mensaje de éxito
+            System.out.println("Datos guardados en el archivo CSV: " + filePath);
+        } else {
+            // Si la solicitud no fue exitosa, imprimir el código de estado
+            System.err.println("Error al realizar la solicitud HTTP: " + response.getStatus());
+        }
+    }
+
+    private static void writeCsvLine(FileWriter csvWriter, String team, String statisticType, String value) throws IOException {
+        csvWriter.append(team + "," + statisticType + "," + value + "\n");
+    }
+
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+    // Events
+
+    // URL: https://v3.football.api-sports.io/fixtures/events?fixture=215662
+    // Esta solicitud devuelve todos los eventos disponibles para el partido con el ID de fixture 215662. 
+    // Los eventos pueden incluir goles, tarjetas, sustituciones, faltas, entre otros.
+
+
+
+
+
+
+
 
 
 

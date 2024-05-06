@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import com.deportes.deport.services.Implements.CsvExportService;
 import com.deportes.deport.services.Implements.FootballAPIService;
 import com.mashape.unirest.http.exceptions.UnirestException;
+
+import io.jsonwebtoken.io.IOException;
 
 @RestController
 @RequestMapping("/api")
@@ -322,11 +325,47 @@ public class FootballController {
 
             // imprimir pantalla
 
-
+            @GetMapping("/fixtures/{fixtureId}/statistics")
+            public void fetchFixtureStatistics(@PathVariable int fixtureId) {
+                CsvExportService.fetchFixtureStatistics(fixtureId);
+            }
 
 
 
             // save csv 
+
+
+            @GetMapping("/fetchAndSaveFixtureStatistics/{fixtureId}")
+            public ResponseEntity<String> fetchAndSaveFixtureStatistics(@PathVariable String fixtureId) throws UnirestException, java.io.IOException {
+                try {
+                    String filePath = "D:/ProyectosWebJava/deport/excells/EstadisticadePartidoporId.csv";
+                    // Llamar al método para obtener y guardar los datos
+                    CsvExportService.fetchAndSaveFixtureStatistics(fixtureId, filePath);
+                    // Devolver una respuesta con estado OK si todo fue exitoso
+                    return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
+                } catch (IOException e) {
+                    // Capturar excepción si hay un error con la solicitud HTTP o de E/S al escribir en el archivo CSV
+                    e.printStackTrace();
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud.");
+                }
+            }
+
+
+    // Events
+        
+    // URL: https://v3.football.api-sports.io/fixtures/events?fixture=215662
+    // Esta solicitud devuelve todos los eventos disponibles para el partido con el ID de fixture 215662. 
+    // Los eventos pueden incluir goles, tarjetas, sustituciones, faltas, entre otros.
+
+
+    // imprimir pantalla
+    
+    
+
+
+
+
+    // save csv 
 
 
 
