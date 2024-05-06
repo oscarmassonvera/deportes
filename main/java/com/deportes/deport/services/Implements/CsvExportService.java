@@ -894,17 +894,139 @@ public class CsvExportService {
 
     // Partidos Ya jugados info
 
+        // imprimir por pantalla 
+
+        public static void fetchHeadToHead(int teamId1, int teamId2) {
+            try {
+                // Construir la URL de la API
+                String apiUrl = "https://v3.football.api-sports.io/fixtures/headtohead?h2h=" + teamId1 + "-" + teamId2;
+        
+                // Realizar la solicitud HTTP GET
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+        
+                // Obtener el cuerpo de la respuesta
+                JsonNode responseBody = response.getBody();
+        
+                // Mostrar el JSON por consola
+                System.out.println(responseBody);
+        
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // save csv 
+
+        public static void fetchAndSaveHeadToHead(int teamId1, int teamId2, String filePath) {
+            try {
+                // Construir la URL de la API con los parámetros teamId1 y teamId2
+                String apiUrl = "https://v3.football.api-sports.io/fixtures/headtohead?h2h=" + teamId1 + "-" + teamId2;
+    
+                // Realizar la solicitud HTTP GET utilizando Unirest
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+    
+                // Obtener el cuerpo de la respuesta
+                JsonNode responseBody = response.getBody();
+    
+                // Obtener el arreglo "response" del objeto JSON
+                JSONArray responseArray = responseBody.getObject().getJSONArray("response");
+    
+                // Crear un objeto FileWriter para escribir en el archivo CSV
+                FileWriter csvWriter = new FileWriter(filePath);
+    
+                // Escribir la cabecera en el archivo CSV
+                csvWriter.append("Fixture ID,Referee,Timezone,Date,Timestamp,First Period,Second Period,Venue ID,Venue Name,Venue City,Status Long,Status Short,Status Elapsed,League ID,League Name,League Country,League Logo,League Flag,League Season,League Round,Home Team ID,Home Team Name,Home Team Logo,Home Team Winner,Away Team ID,Away Team Name,Away Team Logo,Away Team Winner,Home Goals,Away Goals,Halftime Home Goals,Halftime Away Goals,Fulltime Home Goals,Fulltime Away Goals,Extratime Home Goals,Extratime Away Goals,Penalty Home Goals,Penalty Away Goals\n");
+    
+                // Iterar sobre los elementos de "response" y escribir cada fila en el archivo CSV
+                for (int i = 0; i < responseArray.length(); i++) {
+                    JSONObject fixtureObject = responseArray.getJSONObject(i).getJSONObject("fixture");
+                    JSONObject periodsObject = fixtureObject.getJSONObject("periods");
+                    JSONObject venueObject = fixtureObject.getJSONObject("venue");
+                    JSONObject statusObject = fixtureObject.getJSONObject("status");
+                    JSONObject leagueObject = responseArray.getJSONObject(i).getJSONObject("league");
+                    JSONObject homeTeamObject = responseArray.getJSONObject(i).getJSONObject("teams").getJSONObject("home");
+                    JSONObject awayTeamObject = responseArray.getJSONObject(i).getJSONObject("teams").getJSONObject("away");
+                    JSONObject goalsObject = responseArray.getJSONObject(i).getJSONObject("goals");
+                    JSONObject scoreObject = responseArray.getJSONObject(i).getJSONObject("score");
+                
+                    // Obtener los datos relevantes de cada objeto JSON y validar si están vacíos
+                    String fixtureId = String.valueOf(fixtureObject.optInt("id", 0));
+                    String referee = fixtureObject.optString("referee", "");
+                    String timezone = fixtureObject.optString("timezone", "");
+                    String date = fixtureObject.optString("date", "");
+                    String timestamp = String.valueOf(fixtureObject.optLong("timestamp", 0));
+                    String firstPeriod = String.valueOf(periodsObject.optLong("first", 0));
+                    String secondPeriod = String.valueOf(periodsObject.optLong("second", 0));
+                    String venueId = String.valueOf(venueObject.optInt("id", 0));
+                    String venueName = venueObject.optString("name", "");
+                    String venueCity = venueObject.optString("city", "");
+                    String statusLong = statusObject.optString("long", "");
+                    String statusShort = statusObject.optString("short", "");
+                    String statusElapsed = String.valueOf(statusObject.optInt("elapsed", 0));
+                    String leagueId = String.valueOf(leagueObject.optInt("id", 0));
+                    String leagueName = leagueObject.optString("name", "");
+                    String leagueCountry = leagueObject.optString("country", "");
+                    String leagueLogo = leagueObject.optString("logo", "");
+                    String leagueFlag = leagueObject.optString("flag", "");
+                    String leagueSeason = String.valueOf(leagueObject.optInt("season", 0));
+                    String leagueRound = leagueObject.optString("round", "");
+                    String homeTeamId = String.valueOf(homeTeamObject.optInt("id", 0));
+                    String homeTeamName = homeTeamObject.optString("name", "");
+                    String homeTeamLogo = homeTeamObject.optString("logo", "");
+                    String homeTeamWinner = String.valueOf(homeTeamObject.optBoolean("winner", false));
+                    String awayTeamId = String.valueOf(awayTeamObject.optInt("id", 0));
+                    String awayTeamName = awayTeamObject.optString("name", "");
+                    String awayTeamLogo = awayTeamObject.optString("logo", "");
+                    String awayTeamWinner = String.valueOf(awayTeamObject.optBoolean("winner", false));
+                    String homeGoals = String.valueOf(goalsObject.optInt("home", 0));
+                    String awayGoals = String.valueOf(goalsObject.optInt("away", 0));
+                    String halftimeHomeGoals = String.valueOf(scoreObject.getJSONObject("halftime").optInt("home", 0));
+                    String halftimeAwayGoals = String.valueOf(scoreObject.getJSONObject("halftime").optInt("away", 0));
+                    String fulltimeHomeGoals = String.valueOf(scoreObject.getJSONObject("fulltime").optInt("home", 0));
+                    String fulltimeAwayGoals = String.valueOf(scoreObject.getJSONObject("fulltime").optInt("away", 0));
+                    String extratimeHomeGoals = String.valueOf(scoreObject.getJSONObject("extratime").optInt("home", 0));
+                    String extratimeAwayGoals = String.valueOf(scoreObject.getJSONObject("extratime").optInt("away", 0));
+                    String penaltyHomeGoals = String.valueOf(scoreObject.getJSONObject("penalty").optInt("home", 0));
+                    String penaltyAwayGoals = String.valueOf(scoreObject.getJSONObject("penalty").optInt("away", 0));
+                
+                    // Escribir la fila en el archivo CSV
+                    csvWriter.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                        fixtureId, referee, timezone, date, timestamp, firstPeriod, secondPeriod, venueId, venueName, venueCity, statusLong, statusShort, statusElapsed, leagueId, leagueName, leagueCountry, leagueLogo, leagueFlag, leagueSeason, leagueRound,
+                        homeTeamId, homeTeamName, homeTeamLogo, homeTeamWinner, awayTeamId, awayTeamName, awayTeamLogo, awayTeamWinner, homeGoals, awayGoals, halftimeHomeGoals, halftimeAwayGoals, fulltimeHomeGoals, fulltimeAwayGoals, extratimeHomeGoals, extratimeAwayGoals, penaltyHomeGoals, penaltyAwayGoals));
+                }
+    
+                // Cerrar el objeto FileWriter
+                csvWriter.flush();
+                csvWriter.close();
+    
+                // Imprimir mensaje de éxito
+                System.out.println("Datos guardados en el archivo CSV: " + filePath);
+    
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    
+        
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+ 
+// Statistics Estadisticas de partido especificado por su id ( funciona como la anterior con el id del partido )
+
+    // imprimir pantalla
 
 
 
 
 
-
-
-
-
-
-
+    // save csv 
 
 
 

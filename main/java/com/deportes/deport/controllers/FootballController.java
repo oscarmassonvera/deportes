@@ -285,15 +285,51 @@ public class FootballController {
 
             // imprimir por pantalla
 
-            
+            @GetMapping("/partidoxequiposid/print/{h2h}")
+            public void fetchHeadToHead(@PathVariable String h2h) throws UnirestException {
+                // Dividir la cadena por el guion para obtener los IDs de equipo
+                String[] teamIds = h2h.split("-");
+                int teamId1 = Integer.parseInt(teamIds[0]);
+                int teamId2 = Integer.parseInt(teamIds[1]);
+
+                // Luego, puedes utilizar los IDs de equipo según sea necesario
+                CsvExportService.fetchHeadToHead(teamId1, teamId2);
+            }
+
+            // save csv 
+
+            @GetMapping("/fetchAndSaveHeadToHead/{teamId1}/{teamId2}")
+            public ResponseEntity<String> fetchAndSaveHeadToHead(@PathVariable int teamId1, @PathVariable int teamId2) {
+                try {
+                    String filePath = "D:/ProyectosWebJava/deport/excells/PartidoYaJugados.csv";
+                    // Llamar al método para obtener y guardar los datos
+                    CsvExportService.fetchAndSaveHeadToHead(teamId1, teamId2, filePath);
+                    // Devolver una respuesta con estado OK si todo fue exitoso
+                    return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
+                } catch (IllegalArgumentException e) {
+                    // Capturar excepción si los parámetros son inválidos
+                    return ResponseEntity.badRequest().body("Los IDs de equipo proporcionados no son válidos.");
+                } catch (Exception e) {
+                    // Capturar excepción general
+                    e.printStackTrace();
+                    // Devolver una respuesta con estado de error interno del servidor (500)
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud.");
+                }
+            }
 
 
+    // Statistics Estadisticas de partido especificado por su id ( funciona como la anterior con el id del partido )
+
+            // imprimir pantalla
 
 
 
 
 
             // save csv 
+
+
+
 
 
 
