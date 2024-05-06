@@ -14,6 +14,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -777,12 +778,130 @@ public class CsvExportService {
 //----------------------------------------------------------------------------------------------------------------------------------------//
 
     // Calendario partido por su id info importante para apostar 
-
-    // https://v3.football.api-sports.io/fixtures?id=215662
-
-
-
     
+    // imprimir por pantalla
+
+    public static void fetchFixtureById(String fixtureId) {
+        try {
+            // Construir la URL de la API
+            String apiUrl = "https://v3.football.api-sports.io/fixtures?id=" + fixtureId;
+
+            // Realizar la solicitud HTTP GET
+        HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+        .header("x-rapidapi-host", "v3.football.api-sports.io")
+        .asJson();
+
+        // Obtener el cuerpo de la respuesta
+        JsonNode responseBody = response.getBody();
+
+        // Mostrar el JSON por consola
+        System.out.println(responseBody);
+        
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // save csv
+
+    public static void fetchAndSaveFixturesById(String fixtureId, String filePath) {
+        try {
+            // Construir la URL de la API con el ID del fixture
+            String apiUrl = "https://v3.football.api-sports.io/fixtures?id=" + fixtureId;
+    
+            // Realizar la solicitud HTTP GET
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+    
+            // Verificar si la solicitud fue exitosa
+            if (response.getStatus() == HttpStatus.SC_OK) {
+                // Obtener el cuerpo de la respuesta como un objeto JSON
+                JSONObject fixtureObj = response.getBody().getObject();
+    
+                // Extraer los datos del JSON
+                JSONArray responseArray = fixtureObj.getJSONArray("response");
+                JSONObject fixtureData = responseArray.getJSONObject(0).getJSONObject("fixture");
+                JSONObject venueData = fixtureData.getJSONObject("venue");
+                JSONObject leagueData = responseArray.getJSONObject(0).getJSONObject("league");
+                JSONObject homeTeamData = responseArray.getJSONObject(0).getJSONObject("teams").getJSONObject("home");
+                JSONObject awayTeamData = responseArray.getJSONObject(0).getJSONObject("teams").getJSONObject("away");
+                JSONObject scoreData = responseArray.getJSONObject(0).getJSONObject("score");
+                JSONObject halftimeData = scoreData.getJSONObject("halftime");
+                JSONObject fulltimeData = scoreData.getJSONObject("fulltime");
+                JSONObject extratimeData = scoreData.getJSONObject("extratime");
+                JSONObject penaltyData = scoreData.getJSONObject("penalty");
+    
+                // Crear un objeto FileWriter para escribir en el archivo CSV
+                FileWriter csvWriter = new FileWriter(filePath);
+    
+                // Escribir los datos en el archivo CSV
+                writeCsvLine(csvWriter, "Date", fixtureData.getString("date").split("T")[0]);
+                writeCsvLine(csvWriter, "City", venueData.getString("city"));
+                writeCsvLine(csvWriter, "Stadium ID", String.valueOf(venueData.getInt("id")));
+                writeCsvLine(csvWriter, "Stadium Name", venueData.getString("name"));
+                writeCsvLine(csvWriter, "Home Team ID", String.valueOf(homeTeamData.getInt("id")));
+                writeCsvLine(csvWriter, "Home Team Name", homeTeamData.getString("name"));
+                writeCsvLine(csvWriter, "Home Team Logo", homeTeamData.getString("logo"));
+                writeCsvLine(csvWriter, "Away Team ID", String.valueOf(awayTeamData.getInt("id")));
+                writeCsvLine(csvWriter, "Away Team Name", awayTeamData.getString("name"));
+                writeCsvLine(csvWriter, "Away Team Logo", awayTeamData.getString("logo"));
+                writeCsvLine(csvWriter, "League Country", leagueData.getString("country"));
+                writeCsvLine(csvWriter, "League Flag", leagueData.getString("flag"));
+                writeCsvLine(csvWriter, "League Name", leagueData.getString("name"));
+                writeCsvLine(csvWriter, "League Logo", leagueData.getString("logo"));
+                writeCsvLine(csvWriter, "Season", String.valueOf(leagueData.getInt("season")));
+                writeCsvLine(csvWriter, "Round", leagueData.getString("round"));
+                writeCsvLine(csvWriter, "Fixture ID", String.valueOf(fixtureData.getInt("id")));
+                writeCsvLine(csvWriter, "Referee", fixtureData.optString("referee", ""));
+                writeCsvLine(csvWriter, "Timestamp", String.valueOf(fixtureData.getInt("timestamp")));
+                writeCsvLine(csvWriter, "Timezone", fixtureData.getString("timezone"));
+                writeCsvLine(csvWriter, "Status Short", fixtureData.getJSONObject("status").getString("short"));
+                writeCsvLine(csvWriter, "Status Long", fixtureData.getJSONObject("status").getString("long"));
+                writeCsvLine(csvWriter, "Halftime Home Goals", String.valueOf(halftimeData.optInt("home", 0)));
+                writeCsvLine(csvWriter, "Halftime Away Goals", String.valueOf(halftimeData.optInt("away", 0)));
+                writeCsvLine(csvWriter, "Fulltime Home Goals", String.valueOf(fulltimeData.optInt("home", 0)));
+                writeCsvLine(csvWriter, "Fulltime Away Goals", String.valueOf(fulltimeData.optInt("away", 0)));
+                writeCsvLine(csvWriter, "Extratime Home Goals", String.valueOf(extratimeData.optInt("home", 0)));
+                writeCsvLine(csvWriter, "Extratime Away Goals", String.valueOf(extratimeData.optInt("away", 0)));
+                writeCsvLine(csvWriter, "Penalty Home Goals", String.valueOf(penaltyData.optInt("home", 0)));
+                writeCsvLine(csvWriter, "Penalty Away Goals", String.valueOf(penaltyData.optInt("away", 0)));
+    
+                // Cerrar el objeto FileWriter
+                csvWriter.flush();
+                csvWriter.close();
+    
+                // Imprimir mensaje de éxito
+                System.out.println("Datos guardados en el archivo CSV: " + filePath);
+            } else {
+                // Si la solicitud no fue exitosa, imprimir el código de estado
+                System.err.println("Error al realizar la solicitud HTTP: " + response.getStatus());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void writeCsvLine(FileWriter csvWriter, String key, String value) throws IOException {
+        csvWriter.append(key + ": " + value + "\n");
+    }
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+
 
 
 

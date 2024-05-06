@@ -255,5 +255,33 @@ public class FootballController {
 
 
 
+        //  Partidos por id
+
+            // USAR LA URL DE PARTIDO POR ID PARA QUE ME DE TODA LA INFO VALIOSA DEL PARTIDO Y LOS EQUIPOS
+            // SOLO QUE PRIMERO SE BUSCA TODOS LOS PARTIDOS DE LA TEMPORADA PARA POSTERIOR MENTE CON ESOS 
+            // PARTIDOS ELEGIR EL PARTIDO A BUSCAR POR MEDIO DE SU ID 
+
+
+            // imprimir por pantalla 
+
+            @GetMapping("/partidoxid/print/{partidoId}")
+            public void fetchAndPrintfixture( @PathVariable String partidoId ) throws UnirestException {
+                CsvExportService.fetchFixtureById(partidoId);
+            }
+
+            // save csv 
+
+
+            @GetMapping("/partidoxid/csv/{partidoId}")
+            public ResponseEntity<String> partidoxid(@PathVariable("partidoId") String partidoId) {
+                String filePath = "D:/ProyectosWebJava/deport/excells/PartidoXId.csv";
+                CsvExportService.fetchAndSaveFixturesById(partidoId, filePath);
+                return ResponseEntity.status(HttpStatus.OK).body("Datos del partido guardados en el archivo CSV: " + filePath);
+            }
+
+
+
+
+
 
 }
