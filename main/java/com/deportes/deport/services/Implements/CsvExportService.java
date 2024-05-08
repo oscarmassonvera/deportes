@@ -1116,6 +1116,254 @@ public class CsvExportService {
     // Esta solicitud devuelve todos los eventos disponibles para el partido con el ID de fixture 215662. 
     // Los eventos pueden incluir goles, tarjetas, sustituciones, faltas, entre otros.
 
+    // imprimir pantalla
+
+    public static void fetchFixtureEvents(int fixtureId) {
+        try {
+            // Construir la URL de la API
+            String apiUrl = "https://v3.football.api-sports.io/fixtures/events?fixture=" + fixtureId;
+    
+            // Realizar la solicitud HTTP GET
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+    
+            // Obtener el cuerpo de la respuesta
+            JsonNode responseBody = response.getBody();
+    
+            // Mostrar el JSON por consola
+            System.out.println(responseBody);
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // save csv 
+
+    public void fetchAndSaveFixtureEvents(int fixtureId, String filePath) throws IOException {
+        String apiUrl = "https://v3.football.api-sports.io/fixtures/events?fixture=" + fixtureId;
+
+        try {
+            // Realizar la solicitud HTTP GET con Unirest
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+
+            // Guardar los eventos en un archivo CSV
+            saveEventsToCSV(response.getBody(), filePath);
+
+            System.out.println("Datos guardados correctamente en " + filePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IOException("Error al obtener y guardar los eventos del partido.", e);
+        }
+    }
+
+    private void saveEventsToCSV(JsonNode responseBody, String filePath) throws IOException {
+        // Verificar si responseBody es nulo
+        if (responseBody == null) {
+            throw new IllegalArgumentException("El cuerpo de respuesta es nulo.");
+        }
+
+        // Convertir el objeto JsonNode a JSONObject
+        JSONObject responseJson = responseBody.getObject();
+
+        // Obtener el arreglo de eventos de la respuesta
+        JSONArray eventsArray = responseJson.getJSONArray("response");
+
+        // Crear un FileWriter para escribir en el archivo CSV
+        try (FileWriter writer = new FileWriter(filePath)) {
+            // Escribir la cabecera del CSV
+            writer.append("Team Name,Team id,Team Logo,Player Name,Player Id,Time Elapsed,Time Extra,Assist Id,Assist Name,Event Type,Event Detail,Event Comments\n");
+
+            // Iterar sobre cada evento y escribir los datos en el archivo CSV
+            for (int i = 0; i < eventsArray.length(); i++) {
+                JSONObject event = eventsArray.getJSONObject(i);
+                // Obtener los datos de cada evento
+                String teamName = event.getJSONObject("team").optString("name", "");
+                int teamId = event.getJSONObject("team").optInt("id", 0);
+                String teamLogo  = event.getJSONObject("team").optString("logo", "");
+            
+                String playerName = event.getJSONObject("player").optString("name", "");
+                int playerId = event.getJSONObject("player").optInt("id", 0);
+            
+                int timeElapsed = event.getJSONObject("time").optInt("elapsed", 0);
+                String timeExtra = event.getJSONObject("time").optString("extra", "");
+            
+                int assistId = event.getJSONObject("assist").optInt("id", 0);
+                String assistName = event.getJSONObject("assist").optString("name", "");
+            
+                String eventType = event.optString("type", "");
+                String eventDetail = event.optString("detail", "");
+                String eventComments = event.optString("comments", "");
+            
+                // Escribir los datos en una línea del CSV
+                writer.append(String.format("%s,%d,%s,%s,%d,%d,%s,%d,%s,%s,%s,%s\n",
+                teamName, teamId, teamLogo, playerName, playerId, timeElapsed, timeExtra, assistId, assistName, eventType, eventDetail, eventComments));
+            }
+        } catch (IOException e) {
+            throw new IOException("Error al escribir en el archivo CSV: " + e.getMessage(), e);
+        }
+    }
+
+
+    //  Que informacion da este metodo ? 
+    //  Team Name: Nombre del equipo.
+    //  Team id: Identificador del equipo.
+    //  Team Logo: Enlace al logotipo del equipo.
+    //  Player Name: Nombre del jugador involucrado en el evento.
+    //  Player Id: Identificador del jugador.
+    //  Time Elapsed: Tiempo transcurrido en el partido cuando ocurrió el evento.
+    //  Time Extra: Tiempo extra, si aplica.
+    //  Assist Id: Identificador de asistencia (si hubo alguna).
+    //  Assist Name: Nombre del jugador que proporcionó la asistencia.
+    //  Event Type: Tipo de evento (por ejemplo, gol, tarjeta).
+    //  Event Detail: Detalle adicional sobre el evento.
+    //  Event Comments: Comentarios adicionales sobre el evento.
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+        //     Lineups
+
+        // https://v3.football.api-sports.io/fixtures/lineups?fixture=592872: Esta URL devuelve todas las 
+        // alineaciones disponibles para el partido con el ID de fixture 592872. Proporciona información 
+        // sobre los jugadores alineados en ambos equipos
+
+    // imprimir pantalla
+
+    public static void fetchFixtureLineups(int fixtureId) {
+        try {
+            // Construir la URL de la API
+            String apiUrl = "https://v3.football.api-sports.io/fixtures/lineups?fixture=" + fixtureId;
+    
+            // Realizar la solicitud HTTP GET
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+    
+            // Obtener el cuerpo de la respuesta
+            JsonNode responseBody = response.getBody();
+    
+            // Mostrar el JSON por consola
+            System.out.println(responseBody);
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // save csv 
+
+
+
+    public void fetchAndSaveLineups(int fixtureId, String filePath) throws IOException {
+        String apiUrl = "https://v3.football.api-sports.io/fixtures/lineups?fixture=" + fixtureId;
+
+        try {
+            // Realizar la solicitud HTTP GET con Unirest
+            HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .header("x-rapidapi-host", "v3.football.api-sports.io")
+                    .asJson();
+
+            // Guardar las alineaciones en un archivo CSV
+            saveLineupsToCSV(response.getBody(), filePath);
+
+            System.out.println("Datos guardados correctamente en " + filePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new IOException("Error al obtener y guardar las alineaciones del partido.", e);
+        }
+    }
+
+    private void saveLineupsToCSV(JsonNode responseBody, String filePath) throws IOException {
+        // Verificar si responseBody es nulo
+        if (responseBody == null) {
+            throw new IllegalArgumentException("El cuerpo de respuesta es nulo.");
+        }
+
+        // Convertir el objeto JsonNode a JSONObject
+        JSONObject responseJson = responseBody.getObject();
+
+        // Obtener el arreglo de alineaciones de la respuesta
+        JSONArray lineupsArray = responseJson.getJSONArray("response");
+
+        // Crear un FileWriter para escribir en el archivo CSV
+        try (FileWriter writer = new FileWriter(filePath)) {
+            // Escribir la cabecera del CSV
+            writer.append("Team Name,Formation,Coach Name,Coach Photo,Substitute Number,Substitute Position,Substitute Name,Substitute ID,Starting XI Number,Starting XI Position,Starting XI Name,Starting XI ID\n");
+
+            // Iterar sobre cada alineación y escribir los datos en el archivo CSV
+            for (int i = 0; i < lineupsArray.length(); i++) {
+                JSONObject lineup = lineupsArray.getJSONObject(i);
+                JSONObject team = lineup.getJSONObject("team");
+                JSONArray startingXI = lineup.getJSONArray("startXI");
+                JSONArray substitutes = lineup.getJSONArray("substitutes");
+                JSONObject coach = lineup.getJSONObject("coach");
+
+                // Escribir datos del equipo
+                // Escribir datos del equipo
+                String teamName = team.isNull("name") ? "" : team.getString("name");
+                String formation = lineup.isNull("formation") ? "" : lineup.getString("formation");
+                String coachName = coach.isNull("name") ? "" : coach.getString("name");
+                String coachPhoto = coach.isNull("photo") ? "" : coach.getString("photo");
+
+                // Escribir datos de los suplentes
+                writePlayersToCSV(substitutes, writer, teamName, formation, coachName, coachPhoto);
+
+                // Escribir datos de los titulares
+                writePlayersToCSV(startingXI, writer, teamName, formation, coachName, coachPhoto);
+            }
+        } catch (IOException e) {
+            throw new IOException("Error al escribir en el archivo CSV: " + e.getMessage(), e);
+        }
+    }
+
+    private void writePlayersToCSV(JSONArray playersArray, FileWriter writer, String teamName, String formation, String coachName, String coachPhoto) throws IOException {
+        // Iterar sobre cada jugador en el arreglo JSON
+        for (int j = 0; j < playersArray.length(); j++) {
+            JSONObject player = playersArray.getJSONObject(j);
+            JSONObject playerInfo = player.getJSONObject("player");
+
+            // Escribir datos del jugador
+            int number = playerInfo.isNull("number") ? 0 : playerInfo.getInt("number");
+            String pos = playerInfo.isNull("pos") ? "" : playerInfo.getString("pos");
+            String playerName = playerInfo.isNull("name") ? "" : playerInfo.getString("name");
+            int playerId = playerInfo.isNull("id") ? 0 : playerInfo.getInt("id");
+
+            // Escribir los datos en una línea del CSV
+            writer.append(String.format("%s,%s,%s,%s,%d,%s,%s,%d,%d,%s,%s,%d\n",
+                    teamName, formation, coachName, coachPhoto, number, pos, playerName, playerId, number, pos, playerName, playerId));
+        }
+    }
+
+    // Que da informacion da este metodo ?
+
+    // Team Name: Nombre del equipo.
+    // Formation: Formación táctica utilizada por el equipo.
+    // Coach Name: Nombre del entrenador del equipo.
+    // Coach Photo: Enlace a la foto del entrenador.
+    // Substitute Number: Número del jugador suplente.
+    // Substitute Position: Posición del jugador suplente.
+    // Substitute Name: Nombre del jugador suplente.
+    // Substitute ID: ID del jugador suplente.
+    // Starting XI Number: Número del jugador titular.
+    // Starting XI Position: Posición del jugador titular.
+    // Starting XI Name: Nombre del jugador titular.
+    // Starting XI ID: ID del jugador titular.
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+    //  Players statistics
+
+        // imprimir pantalla
+
+        // save csv 
+
 
 
 

@@ -360,16 +360,78 @@ public class FootballController {
 
     // imprimir pantalla
     
-    
+    @GetMapping("/events/{fixtureId}")
+            public void fetchFixtureEvents(@PathVariable int fixtureId) {
+                CsvExportService.fetchFixtureStatistics(fixtureId);
+            }
 
 
 
 
     // save csv 
 
+    @GetMapping("/events/csv/{fixtureId}")
+    public ResponseEntity<String> Events(@PathVariable int fixtureId) throws java.io.IOException {
+        try {
+            String filePath = "D:/ProyectosWebJava/deport/excells/EventsxFixtureId.csv";
+            
+            // Crear una instancia de CsvExportService
+            CsvExportService csvExportService = new CsvExportService();
+            
+            // Llamar al método para obtener y guardar los datos
+            csvExportService.fetchAndSaveFixtureEvents(fixtureId, filePath);
+            
+            // Devolver una respuesta con estado OK si todo fue exitoso
+            return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
+        } catch (IOException e) {
+            // Capturar excepción si hay un error con la solicitud HTTP o de E/S al escribir en el archivo CSV
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud.");
+        }
+    }
+
+        //     Lineups
+
+        // https://v3.football.api-sports.io/fixtures/lineups?fixture=592872: Esta URL devuelve todas las 
+        // alineaciones disponibles para el partido con el ID de fixture 592872. Proporciona información 
+        // sobre los jugadores alineados en ambos equipos
+
+    // imprimir pantalla
+
+    @GetMapping("/LineUps/print/{fixtureId}")
+    public void fetchFixtureLineups(@PathVariable int fixtureId) {
+        CsvExportService.fetchFixtureLineups(fixtureId);
+    }
+
+    // save csv 
+
+    @GetMapping("/lineups/csv/{fixtureId}")
+        public ResponseEntity<String> Lineups(@PathVariable int fixtureId) throws java.io.IOException {
+            try {
+                String filePath = "D:/ProyectosWebJava/deport/excells/LineupsforIdFixte.csv";
+                
+                // Crear una instancia de CsvExportService
+                CsvExportService csvExportService = new CsvExportService();
+                
+                // Llamar al método para obtener y guardar los datos
+                csvExportService.fetchAndSaveLineups(fixtureId, filePath);
+                
+                // Devolver una respuesta con estado OK si todo fue exitoso
+                return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
+            } catch (IOException e) {
+                // Capturar excepción si hay un error con la solicitud HTTP o de E/S al escribir en el archivo CSV
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud.");
+            }
+        }
 
 
+    //  Players statistics
 
+
+        // imprimir pantalla
+
+        // save csv 
 
 
 }
