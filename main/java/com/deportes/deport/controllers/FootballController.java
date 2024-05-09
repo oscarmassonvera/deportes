@@ -467,8 +467,46 @@ public class FootballController {
 
         // imprimir pantalla
 
+        @GetMapping("/injuries/print/{leagueId}/{seasonYear}")
+        public void fetchInjuries(@PathVariable int leagueId, @PathVariable int seasonYear) {
+            CsvExportService.fetchInjuries(leagueId, seasonYear);
+        }
 
         // save csv
 
+        @GetMapping("/injuries/csv/{leagueId}/{seasonYear}")
+        public ResponseEntity<String> Injuries(@PathVariable int leagueId, @PathVariable int seasonYear) throws java.io.IOException, UnirestException {
+            try {
+                String filePath = "D:/ProyectosWebJava/deport/excells/lesiones.csv";
+
+                // Crear una instancia de CsvExportService
+                CsvExportService csvExportService = new CsvExportService();
+
+                // Llamar al método para obtener y guardar los datos
+                csvExportService.fetchAndSaveInjuries( leagueId,  seasonYear, filePath);
+
+                // Devolver una respuesta con estado OK si todo fue exitoso
+                return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
+            } catch (IOException e) {
+                // Capturar excepción si hay un error con la solicitud HTTP o de E/S al escribir en el archivo CSV
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud.");
+            }
+        }
+
+
+
+
+    // Top Scorers
+
+        // imprimir pantalla
+
+
+        // save csv
+
+
+
+
+        
 
 }

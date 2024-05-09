@@ -1551,10 +1551,107 @@ for (int j = 0; j < playersArray.length(); j++) {
 
         // imprimir pantalla
 
+        public static void fetchInjuries(int leagueId, int seasonYear) {
+            try {
+                // Construir la URL de la API
+                String apiUrl = "https://v3.football.api-sports.io/injuries?league=" + leagueId + "&season=" + seasonYear;
+    
+                // Realizar la solicitud HTTP GET
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+    
+                // Obtener el cuerpo de la respuesta
+                JsonNode responseBody = response.getBody();
+    
+                // Mostrar el JSON por consola
+                System.out.println(responseBody);
+    
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         // save csv
 
+        public void fetchAndSaveInjuries(int leagueId, int seasonYear, String filePath) throws UnirestException {
+            String apiUrl = "https://v3.football.api-sports.io/injuries?league=" + leagueId + "&season=" + seasonYear;
+        
+            // Make the API request
+            HttpResponse<JsonNode> jsonResponse = Unirest.get(apiUrl)
+                    .header("Accept", "application/json")
+                    .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                    .asJson();
+        
+            // Process the response
+            JSONObject response = jsonResponse.getBody().getObject();
+            JSONArray injuries = response.getJSONArray("response");
+        
+            // Write data to CSV file
+            try (FileWriter writer = new FileWriter(filePath)) {
+                // Write CSV header
+                writer.append("Player Id,Player Name,Player Photo,Player Type,Player Reason," +
+                        "Team Id,Team Name,Team Logo," +
+                        "Fixture Id,Fixture Timezone,Fixture Date,Fixture Timestamp," +
+                        "League Id,League Season,League Name,League Country,League Logo,League Flag\n");
+        
+                // Write injury data to CSV
+                for (int i = 0; i < injuries.length(); i++) {
+                    JSONObject injury = injuries.getJSONObject(i);
+                    JSONObject player = injury.getJSONObject("player");
+                    JSONObject team = injury.getJSONObject("team");
+                    JSONObject fixture = injury.getJSONObject("fixture");
+                    JSONObject league = injury.getJSONObject("league");
+        
+                    String playerId = player.has("id") ? String.valueOf(player.getInt("id")) : "0";
+                    String playerName = player.has("name") ? "\"" + player.getString("name") + "\"" : "\"\"";
+                    String playerPhoto = player.has("photo") ? "\"" + player.getString("photo") + "\"" : "\"\"";
+                    String playerType = player.has("type") ? "\"" + player.getString("type") + "\"" : "\"\"";
+                    String playerReason = player.has("reason") ? "\"" + player.getString("reason") + "\"" : "\"\"";
+        
+                    String teamId = team.has("id") ? String.valueOf(team.getInt("id")) : "0";
+                    String teamName = team.has("name") ? "\"" + team.getString("name") + "\"" : "\"\"";
+                    String teamLogo = team.has("logo") ? "\"" + team.getString("logo") + "\"" : "\"\"";
+        
+                    String fixtureId = fixture.has("id") ? String.valueOf(fixture.getInt("id")) : "0";
+                    String fixtureTimezone = fixture.has("timezone") ? "\"" + fixture.getString("timezone") + "\"" : "\"\"";
+                    String fixtureDate = fixture.has("date") ? "\"" + fixture.getString("date") + "\"" : "\"\"";
+                    String fixtureTimestamp = fixture.has("timestamp") ? String.valueOf(fixture.getInt("timestamp")) : "0";
+        
+                    String leagueIdStr = league.has("id") ? String.valueOf(league.getInt("id")) : "0";
+                    String leagueSeason = league.has("season") ? String.valueOf(league.getInt("season")) : "0";
+                    String leagueName = league.has("name") ? "\"" + league.getString("name") + "\"" : "\"\"";
+                    String leagueCountry = league.has("country") ? "\"" + league.getString("country") + "\"" : "\"\"";
+                    String leagueLogo = league.has("logo") ? "\"" + league.getString("logo") + "\"" : "\"\"";
+                    String leagueFlag = league.has("flag") ? "\"" + league.getString("flag") + "\"" : "\"\"";
+        
+                    writer.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                            playerId, playerName, playerPhoto, playerType, playerReason,
+                            teamId, teamName, teamLogo,
+                            fixtureId, fixtureTimezone, fixtureDate, fixtureTimestamp,
+                            leagueIdStr, leagueSeason, leagueName, leagueCountry, leagueLogo, leagueFlag
+                    ));
+                }
+        
+                System.out.println("Injuries data has been saved to " + filePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
+
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+
+    // Top Scorers
+
+        // imprimir pantalla
+
+
+        // save csv
+
+        
 }
 
 
