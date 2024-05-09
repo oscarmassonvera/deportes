@@ -113,13 +113,13 @@ public class FootballController {
         }
     }
 
-    // REVISAR EL FORMATO DE LOS DATOS Y  SUS TIPOS TEAMS STATICS 
+    // REVISAR EL FORMATO DE LOS DATOS Y  SUS TIPOS TEAMS STATICS
     @GetMapping("/team/statistics/{leagueId}/{teamId}/{season}")
     public JSONObject getTeamStatisticsJsonController(
             @PathVariable String leagueId,
             @PathVariable String teamId,
             @PathVariable String season) {
-        
+
         // Llamada al método que obtiene las estadísticas del equipo en formato JSON
         JSONObject teamStatisticsJson = service.getTeamStatisticsJson(leagueId, teamId, season);
 
@@ -129,7 +129,7 @@ public class FootballController {
     }
 
 
-    // Team por nombre 
+    // Team por nombre
     @GetMapping("/find-team-id/{teamName}")
     public String findTeamId(@PathVariable String teamName) {
         Integer teamId = CsvExportService.findTeamIdByName(teamName);
@@ -140,7 +140,7 @@ public class FootballController {
         }
     }
 
-    // Venue o estadios 
+    // Venue o estadios
 
     @GetMapping("/venues/{country}")
     public ResponseEntity<String> exportVenuesToCsv(@PathVariable String country) {
@@ -153,7 +153,7 @@ public class FootballController {
 
 
 
-    // STADING CLASIFICACIONES PARA HACER PRIN EN CONSOLA 
+    // STADING CLASIFICACIONES PARA HACER PRIN EN CONSOLA
 
     @GetMapping("/standings/print/{leagueId}/{season}")
     public void fetchAndPrintStandings(
@@ -162,7 +162,7 @@ public class FootballController {
         csvExportService.fetchAndPrintStandings(leagueId, season);
     }
 
-    // Guardar en archivo csv 
+    // Guardar en archivo csv
 
     @GetMapping("/standings/csv/{leagueName:.+}/{season}")
     public ResponseEntity<String> saveStandings(@PathVariable("leagueName") String leagueName, @PathVariable("season") int season) {
@@ -183,10 +183,10 @@ public class FootballController {
             return new ResponseEntity<>("Error al guardar los datos", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
 
 
-    // ROUNDS por consola 
+
+    // ROUNDS por consola
 
     @GetMapping("/rounds/print/{leagueId}/{season}")
     public void fetchAndPrintRounds(
@@ -197,8 +197,8 @@ public class FootballController {
 
 
     // ROUNDS save csv
-    
-    
+
+
     @GetMapping("/rounds/csv/{leagueName:.+}/{season}")
     public ResponseEntity<String> saveCsvRounds
         ( @PathVariable("leagueName") String leagueName, @PathVariable("season") int season) throws UnirestException {
@@ -221,7 +221,7 @@ public class FootballController {
     }
 
 
-    // Fixtures calendario por consola 
+    // Fixtures calendario por consola
 
     @GetMapping("/fixture/print/{leagueId}/{season}")
     public void fetchAndPrintfixture(
@@ -231,10 +231,10 @@ public class FootballController {
     }
 
 
-    // Fixtures calendario por csv 
+    // Fixtures calendario por csv
 
-    
-    
+
+
     @GetMapping("/fixture/csv/{leagueName:.+}/{season}")
     public ResponseEntity<String> saveCsvAllFixtures
         ( @PathVariable("leagueName") String leagueName, @PathVariable("season") int season) throws UnirestException {
@@ -261,18 +261,18 @@ public class FootballController {
         //  Partidos por id
 
             // USAR LA URL DE PARTIDO POR ID PARA QUE ME DE TODA LA INFO VALIOSA DEL PARTIDO Y LOS EQUIPOS
-            // SOLO QUE PRIMERO SE BUSCA TODOS LOS PARTIDOS DE LA TEMPORADA PARA POSTERIOR MENTE CON ESOS 
-            // PARTIDOS ELEGIR EL PARTIDO A BUSCAR POR MEDIO DE SU ID 
+            // SOLO QUE PRIMERO SE BUSCA TODOS LOS PARTIDOS DE LA TEMPORADA PARA POSTERIOR MENTE CON ESOS
+            // PARTIDOS ELEGIR EL PARTIDO A BUSCAR POR MEDIO DE SU ID
 
 
-            // imprimir por pantalla 
+            // imprimir por pantalla
 
             @GetMapping("/partidoxid/print/{partidoId}")
             public void fetchAndPrintfixture( @PathVariable String partidoId ) throws UnirestException {
                 CsvExportService.fetchFixtureById(partidoId);
             }
 
-            // save csv 
+            // save csv
 
 
             @GetMapping("/partidoxid/csv/{partidoId}")
@@ -299,7 +299,7 @@ public class FootballController {
                 CsvExportService.fetchHeadToHead(teamId1, teamId2);
             }
 
-            // save csv 
+            // save csv
 
             @GetMapping("/fetchAndSaveHeadToHead/{teamId1}/{teamId2}")
             public ResponseEntity<String> fetchAndSaveHeadToHead(@PathVariable int teamId1, @PathVariable int teamId2) {
@@ -332,7 +332,7 @@ public class FootballController {
 
 
 
-            // save csv 
+            // save csv
 
 
             @GetMapping("/fetchAndSaveFixtureStatistics/{fixtureId}")
@@ -352,14 +352,14 @@ public class FootballController {
 
 
     // Events
-        
+
     // URL: https://v3.football.api-sports.io/fixtures/events?fixture=215662
-    // Esta solicitud devuelve todos los eventos disponibles para el partido con el ID de fixture 215662. 
+    // Esta solicitud devuelve todos los eventos disponibles para el partido con el ID de fixture 215662.
     // Los eventos pueden incluir goles, tarjetas, sustituciones, faltas, entre otros.
 
 
     // imprimir pantalla
-    
+
     @GetMapping("/events/{fixtureId}")
             public void fetchFixtureEvents(@PathVariable int fixtureId) {
                 CsvExportService.fetchFixtureStatistics(fixtureId);
@@ -368,19 +368,19 @@ public class FootballController {
 
 
 
-    // save csv 
+    // save csv
 
     @GetMapping("/events/csv/{fixtureId}")
     public ResponseEntity<String> Events(@PathVariable int fixtureId) throws java.io.IOException {
         try {
             String filePath = "D:/ProyectosWebJava/deport/excells/EventsxFixtureId.csv";
-            
+
             // Crear una instancia de CsvExportService
             CsvExportService csvExportService = new CsvExportService();
-            
+
             // Llamar al método para obtener y guardar los datos
             csvExportService.fetchAndSaveFixtureEvents(fixtureId, filePath);
-            
+
             // Devolver una respuesta con estado OK si todo fue exitoso
             return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
         } catch (IOException e) {
@@ -392,8 +392,8 @@ public class FootballController {
 
         //     Lineups
 
-        // https://v3.football.api-sports.io/fixtures/lineups?fixture=592872: Esta URL devuelve todas las 
-        // alineaciones disponibles para el partido con el ID de fixture 592872. Proporciona información 
+        // https://v3.football.api-sports.io/fixtures/lineups?fixture=592872: Esta URL devuelve todas las
+        // alineaciones disponibles para el partido con el ID de fixture 592872. Proporciona información
         // sobre los jugadores alineados en ambos equipos
 
     // imprimir pantalla
@@ -403,19 +403,19 @@ public class FootballController {
         CsvExportService.fetchFixtureLineups(fixtureId);
     }
 
-    // save csv 
+    // save csv
 
     @GetMapping("/lineups/csv/{fixtureId}")
         public ResponseEntity<String> Lineups(@PathVariable int fixtureId) throws java.io.IOException {
             try {
                 String filePath = "D:/ProyectosWebJava/deport/excells/LineupsforIdFixte.csv";
-                
+
                 // Crear una instancia de CsvExportService
                 CsvExportService csvExportService = new CsvExportService();
-                
+
                 // Llamar al método para obtener y guardar los datos
                 csvExportService.fetchAndSaveLineups(fixtureId, filePath);
-                
+
                 // Devolver una respuesta con estado OK si todo fue exitoso
                 return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
             } catch (IOException e) {
@@ -431,7 +431,44 @@ public class FootballController {
 
         // imprimir pantalla
 
-        // save csv 
+
+        @GetMapping("/playersStadistic/print/{fixtureId}/{teamId}")
+        public void fetchFixturePlayers(@PathVariable int fixtureId, @PathVariable int teamId) {
+            CsvExportService.fetchFixturePlayers(fixtureId, teamId);
+        }
+
+
+        // save csv
+
+        @GetMapping("/playersStadistic/csv/{fixtureId}/{teamId}")
+        public ResponseEntity<String> PlayersStadistic(@PathVariable int fixtureId,@PathVariable int teamId) throws java.io.IOException {
+            try {
+                String filePath = "D:/ProyectosWebJava/deport/excells/PlayersStadistic.csv";
+
+                // Crear una instancia de CsvExportService
+                CsvExportService csvExportService = new CsvExportService();
+
+                // Llamar al método para obtener y guardar los datos
+                csvExportService.fetchAndSavePlayersData( fixtureId,  teamId, filePath);
+
+                // Devolver una respuesta con estado OK si todo fue exitoso
+                return ResponseEntity.ok("Datos guardados en el archivo CSV: " + filePath);
+            } catch (IOException e) {
+                // Capturar excepción si hay un error con la solicitud HTTP o de E/S al escribir en el archivo CSV
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud.");
+            }
+        }
+
+    // Injuries - Lesiones
+
+    // https://v3.football.api-sports.io/injuries?league=2&season=2020: Proporciona todas las lesiones
+    // disponibles para una liga específica y una temporada específica.
+
+        // imprimir pantalla
+
+
+        // save csv
 
 
 }

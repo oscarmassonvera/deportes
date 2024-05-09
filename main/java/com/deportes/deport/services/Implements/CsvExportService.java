@@ -1360,17 +1360,199 @@ public class CsvExportService {
 
     //  Players statistics
 
+    // Get all available players statistics from one {fixture} & {team}
+    // get("https://v3.football.api-sports.io/fixtures/players?fixture=169080&team=2284");
+    // te dará una visión más detallada y específica de cómo los jugadores de un equipo en particular
+    // se desempeñaron en un partido específico
+
+    // funciona con el id del partido y el id del equipo
+
         // imprimir pantalla
 
-        // save csv 
+        public static void fetchFixturePlayers(int fixtureId, int teamId) {
+            try {
+                // Construir la URL de la API
+                String apiUrl = "https://v3.football.api-sports.io/fixtures/players?fixture=" + fixtureId + "&team=" + teamId;
+    
+                // Realizar la solicitud HTTP GET
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .asJson();
+    
+                // Obtener el cuerpo de la respuesta
+                JsonNode responseBody = response.getBody();
+    
+                // Mostrar el JSON por consola
+                System.out.println(responseBody);
+    
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        // save csv
+        
+        
+        public void fetchAndSavePlayersData(int fixtureId, int teamId, String filePath) {
+            try {
+                // Construir la URL con fixtureId y teamId
+                String apiUrl = "https://v3.football.api-sports.io/fixtures/players?fixture=" + fixtureId + "&team=" + teamId;
+    
+                // Hacer la solicitud HTTP con Unirest
+                HttpResponse<JsonNode> response = Unirest.get(apiUrl)
+                        .header("x-rapidapi-host", "v3.football.api-sports.io")
+                        .header("x-rapidapi-key", "690bb9329cd6b41bc4665f60473597d3")
+                        .asJson();
+    
+                // Convertir la respuesta a formato JSON
+                JSONObject jsonResponse = response.getBody().getObject();
+    
+                // Obtener el objeto de respuesta
+                JSONArray responseArray = jsonResponse.getJSONArray("response");
+    
+                // Crear y escribir en el archivo CSV
+                FileWriter csvWriter = new FileWriter(filePath);
+                csvWriter.append("Team ID,Team Logo,Team Name,Team Update,Player Name,Player ID,Player Photo,Player Position,Player Minutes,Player Number,Player Rating,Player Captain,Player Substitute,Player Total Shots,Player Shots On Target,Player Goals Total,Player Goals Conceded,Player Assists,Player Saves,Player Total Passes,Player Key Passes,Player Passes Accuracy,Player Total Tackles,Player Blocks,Player Interceptions,Player Total Duels,Player Duels Won,Player Dribble Attempts,Player Dribble Success,Player Dribble Past,Player Fouls Drawn,Player Fouls Committed,Player Yellow Cards,Player Red Cards,Player Penalty Won,Player Penalty Committed,Player Penalty Scored,Player Penalty Missed,Player Penalty Saved\n");
+    
+                // Iterar sobre cada objeto de respuesta
+                for (int i = 0; i < responseArray.length(); i++) {
+                    JSONObject teamObject = responseArray.getJSONObject(i).getJSONObject("team");
+                    String teamName = teamObject.getString("name");
+                    String teamid = String.valueOf(teamObject.getInt("id"));
+                    String teamlogo = teamObject.getString("logo");
+                    String teamupdate = teamObject.getString("update");
+    
+                    // Obtener la lista de jugadores para cada equipo
+                    JSONArray playersArray = responseArray.getJSONObject(i).getJSONArray("players");
+    
+// Iterar sobre la lista de jugadores
+for (int j = 0; j < playersArray.length(); j++) {
+    JSONObject playerObject = playersArray.getJSONObject(j).getJSONObject("player");
+    String playerName = playerObject.optString("name", "");
+    String playerId = String.valueOf(playerObject.optInt("id", 0));
+    String playerPhoto = playerObject.optString("photo", "");
+
+    // Obtener estadísticas del jugador si están disponibles
+    JSONObject statisticsObject = playersArray.getJSONObject(j).optJSONArray("statistics").optJSONObject(0);
+    if (statisticsObject != null) {
+        // Obtener estadísticas de juegos
+        JSONObject gamesObject = statisticsObject.optJSONObject("games");
+        String playerPosition = gamesObject.optString("position", "");
+        String playerMinutes = String.valueOf(gamesObject.optInt("minutes", 0));
+        String playernumber = String.valueOf(gamesObject.optInt("number", 0));
+        String playerrating = gamesObject.optString("rating", "");
+        String playercaptain = String.valueOf(gamesObject.optBoolean("captain", false));
+        String playersubstitute = String.valueOf(gamesObject.optBoolean("substitute", false));
+
+        // Obtener estadísticas de tiros
+        JSONObject shotsObject = statisticsObject.optJSONObject("shots");
+        String playertotal = String.valueOf(shotsObject.optInt("total", 0));
+        String playeron = String.valueOf(shotsObject.optInt("on", 0));
+
+        // Obtener estadísticas de goles
+        JSONObject goalsObject = statisticsObject.optJSONObject("goals");
+        String playergoalstotal = String.valueOf(goalsObject.optInt("total", 0));
+        String playerconceded = String.valueOf(goalsObject.optInt("conceded", 0));
+        String playerassistcs = String.valueOf(goalsObject.optInt("assists", 0));
+        String playersaves = String.valueOf(goalsObject.optInt("saves", 0));
+
+        // Obtener estadísticas de pases
+        JSONObject passesObject = statisticsObject.optJSONObject("passes");
+        String playerpassestotal = String.valueOf(passesObject.optInt("total", 0));
+        String playerpasseskey = String.valueOf(passesObject.optInt("key", 0));
+        String playerpasesacuracy = passesObject.optString("accuracy", "");
+
+        // Obtener estadísticas de tackles
+        JSONObject tacklesObject = statisticsObject.optJSONObject("tackles");
+        String playertacklestotal = String.valueOf(tacklesObject.optInt("total", 0));
+        String playerblocks = String.valueOf(tacklesObject.optInt("blocks", 0));
+        String playerinterceptions = String.valueOf(tacklesObject.optInt("interceptions", 0));
+
+        // Obtener estadísticas de duelos
+        JSONObject duelsObject = statisticsObject.optJSONObject("duels");
+        String playerduelstotal = String.valueOf(duelsObject.optInt("total", 0));
+        String playerwon = String.valueOf(duelsObject.optInt("won", 0));
+
+        // Obtener estadísticas de dribbles
+        JSONObject dribblesObject = statisticsObject.optJSONObject("dribbles");
+        String playerattempts = String.valueOf(dribblesObject.optInt("attempts", 0));
+        String playersuccess = String.valueOf(dribblesObject.optInt("success", 0));
+        String playerpast = String.valueOf(dribblesObject.optInt("past", 0));
+
+        // Obtener estadísticas de faltas
+        JSONObject foulsObject = statisticsObject.optJSONObject("fouls");
+        String playerdrawn = String.valueOf(foulsObject.optInt("drawn", 0));
+        String playercommitted = String.valueOf(foulsObject.optInt("committed", 0));
+
+        // Obtener estadísticas de tarjetas
+        JSONObject cardsObject = statisticsObject.optJSONObject("cards");
+        String playeryellow = String.valueOf(cardsObject.optInt("yellow", 0));
+        String playerred = String.valueOf(cardsObject.optInt("red", 0));
+
+        // Obtener estadísticas de penaltis
+        JSONObject penaltyObject = statisticsObject.optJSONObject("penalty");
+        String playerpenaltywon = String.valueOf(penaltyObject.optInt("won", 0));
+        String playerpenaltycommite = String.valueOf(penaltyObject.optInt("commited", 0));
+        String playerscored = String.valueOf(penaltyObject.optInt("scored", 0));
+        String playermissed = String.valueOf(penaltyObject.optInt("missed", 0));
+        String playerpenaltysaved = String.valueOf(penaltyObject.optInt("saved", 0));
+
+        // Escribir en el archivo CSV
+        csvWriter.append(teamid).append(",").append(teamlogo).append(",").append(teamName).append(",").append(teamupdate).append(",").
+                append(playerName).append(",").append(playerId).append(",").append(playerPhoto).append(",").
+                append(playerPosition).append(",").append(playerMinutes).append(",").append(playernumber).append(",").
+                append(playerrating).append(",").append(playercaptain).append(",").append(playersubstitute).append(",").
+                append(playertotal).append(",").append(playeron).append(",").
+                // goles
+                append(playergoalstotal).append(",").append(playerconceded).append(",").append(playerassistcs).append(",").append(playersaves).append(",").
+                // pases
+                append(playerpassestotal).append(",").append(playerpasseskey).append(",").append(playerpasesacuracy).append(",").
+                // tackles
+                append(playertacklestotal).append(",").append(playerblocks).append(",").append(playerinterceptions).append(",").
+                // duels
+                append(playerduelstotal).append(",").append(playerwon).append(",").
+                // dribbles
+                append(playerattempts).append(",").append(playersuccess).append(",").append(playerpast).append(",").
+                // fouls
+                append(playerdrawn).append(",").append(playercommitted).append(",").
+                // tarjetas
+                append(playeryellow).append(",").append(playerred).append(",").
+                // penaltis
+                append(playerpenaltywon).append(",").append(playerpenaltycommite).append(",").append(playerscored).append(",").append(playermissed).append(",").append(playerpenaltysaved).append(",")
+                .append("\n");
+    }
+}
+
+
+}
+    
+                csvWriter.flush();
+                csvWriter.close();
+    
+                System.out.println("Datos de jugadores guardados en " + filePath);
+    
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        
 
 
 
+//----------------------------------------------------------------------------------------------------------------------------------------//
+
+    // Injuries - Lesiones
+
+    // https://v3.football.api-sports.io/injuries?league=2&season=2020: Proporciona todas las lesiones
+    // disponibles para una liga específica y una temporada específica.
+
+        // imprimir pantalla
 
 
-
-
-
+        // save csv
 
 
 }
